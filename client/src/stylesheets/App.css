@@ -1,1 +1,12 @@
 /* Add your CSS here */
+html{
+    background-color: #1A2027;
+
+}
+
+.questionDisplay{
+    overflow-y: auto;
+    width: 100%;
+    max-height: 600px;
+    margin-bottom: 10px;
+  }
