@@ -38,7 +38,18 @@ export default function AuthContextProvider({ children }) {
       setUserName(data.user_name);
       setUserId(data.userID);
       setUserRole(data.userRole);
-      
+      try {
+        const response = await axios.get("http://localhost:8000/questions");
+        console.log("response", response.data);
+
+        setAllQuestions(
+          response.data.sort(
+            (a, b) => new Date(b.ask_date) - new Date(a.ask_date)
+          )
+        );
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+      }
     } else {
       setIsLoggedIn(true);
       setUserName("Guest");
@@ -61,16 +72,34 @@ export default function AuthContextProvider({ children }) {
       console.error("unable to log out", err);
     }
   };
+
+  const handleSort = async (params) => {
+    console.log("sending request for " + params.sort);
+
+    try {
+      const response = await axios.get("http://localhost:8000/questions", {
+        params: params,
+      });
+      console.log("received" + response.data);
+
+      setAllQuestions(response.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const contextValue = useMemo(
     () => ({
       isLoggedIn: isLoggedIn,
       userName: userName,
       userId: userId,
       userRole: userRole,
+      allQuestions: allQuestions,
       onLogin: loginHandler,
       onLogout: logoutHandler,
+      onSort: handleSort,
     }),
-    [isLoggedIn, userName, userId, userRole]
+    [isLoggedIn, userName, userId, userRole, allQuestions]
   );
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

@@ -12,6 +12,9 @@ import { Link } from "@mui/material";
 import MenuDrawer from "./menuDrawer";
 import AuthContext from "./authContext";
 import QuestionDisplay from "./questionDisplay";
+import Paper from "@mui/material/Paper";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ToggleButton from "@mui/material/ToggleButton";
 import axios from "axios";
 
 const SearchIconWrapper = styled("div")(({ theme }) => ({
@@ -111,33 +114,29 @@ function HomeHeader() {
 }
 
 export default function HomePage() {
-  const [questions, setAllQuestions] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Add isLoading state
+  const authContext = useContext(AuthContext);
 
-  useEffect(() => {
-    const fetchAllQuestions = async () => {
-      try {
-        const response = await axios.get("http://localhost:8000/questions");
-        console.log("response",response.data);
+  const handleNewestSort = async () => {
+    authContext.onSort({ sort: "newest" });
+  };
 
-        setAllQuestions(
-          response.data.sort(
-            (a, b) => new Date(b.ask_date) - new Date(a.ask_date)
-          )
-        );
-        setIsLoading(false); // Set isLoading to false when data is fetched
-      } catch (error) {
-        console.error("Error fetching questions:", error);
-        setIsLoading(false); // Set isLoading to false even in case of an error
-      }
-    };
-    fetchAllQuestions();
-  }, []);
+  const handleActiveSort = async () => {
+    authContext.onSort({ sort: "active" });
+  };
+
+  const handleUnanswered = async () => {
+    authContext.onSort({ unanswered: true });
+  };
 
   return (
     <>
       <HomeHeader />
-      {!isLoading && <QuestionDisplay questions={questions} />}{" "}
+      <ToggleButtonGroup color="primary" exclusive aria-label="Platform">
+        <ToggleButton value="newest" onClick={handleNewestSort}>Newest</ToggleButton>
+        <ToggleButton value="active" onClick={handleActiveSort}>Active</ToggleButton>
+        <ToggleButton value="unanswered" onClick= {handleUnanswered}>Unanswered</ToggleButton>
+      </ToggleButtonGroup>
+      <QuestionDisplay questions={authContext.allQuestions} />{" "}
       {/* Conditionally render the QuestionDisplay component */}
     </>
   );

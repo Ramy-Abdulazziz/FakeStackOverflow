@@ -3,9 +3,6 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
-import Paper from "@mui/material/Paper";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import ToggleButton from "@mui/material/ToggleButton";
 
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Container, Grid } from "@mui/material";
@@ -124,7 +121,6 @@ function SingleQuestionContainer({ question }) {
 export default function QuestionDisplay({ questions }) {
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 5;
-  console.log(questions);
 
   const indexOfLastQuestion = currentPage * questionsPerPage;
   const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
@@ -148,11 +144,6 @@ export default function QuestionDisplay({ questions }) {
           mr: 10,
         }}
       >
-          <ToggleButtonGroup color="primary" exclusive aria-label="Platform">
-            <ToggleButton value="newest">Newest</ToggleButton>
-            <ToggleButton value="active">Active</ToggleButton>
-            <ToggleButton value="unanswered">Unanswered</ToggleButton>
-          </ToggleButtonGroup>
         {currentQuestions.map((q, index) => (
           <SingleQuestionContainer key={index} question={q} />
         ))}
