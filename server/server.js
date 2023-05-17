@@ -241,7 +241,7 @@ app.put("/submit/:id/answer", async (req, res) => {
 
 app.get("/questions", async (req, res) => {
   console.log("Received request for questions");
-
+  console.log(req.sort);
   try {
     const tagName = req.query.tagName;
     const unanswered = req.query.unanswered === "true";
@@ -273,13 +273,15 @@ app.get("/questions", async (req, res) => {
     if (id) {
       const question = await Question.findOne({ _id: id })
         .populate("answers")
+        .populate("tags")
+        .populate("asked_by")
         .exec();
       questions = question ? [question] : [];
     } else {
       questions = await Question.find(query)
         .populate("answers")
         .populate("tags")
-        .populate('asked_by')
+        .populate("asked_by")
         .exec();
     }
 
@@ -301,7 +303,7 @@ app.get("/questions", async (req, res) => {
         }
       });
     }
-    console.log("Sending questions:", questions);
+    console.log("Sending questions:");
 
     if (unanswered) {
       questions.sort((a, b) => b.ask_date - a.ask_date);
