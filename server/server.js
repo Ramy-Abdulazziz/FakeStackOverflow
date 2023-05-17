@@ -7,6 +7,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
+
 const MongoDBStore = require("connect-mongodb-session")(session);
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
@@ -87,10 +88,30 @@ app.post("/login", async (req, res) => {
       let correctPass = await bcrypt.compare(password, user.password);
 
       if (correctPass) {
+        if (req.session && req.session.role && req.session.userId != user._id) {
+          req.session.regenerate((err) => {
+            if (err) {
+              console.log(err);
+              return res
+                .status(500)
+                .json({ message: "error regenerating session" });
+            }
+
+            console.log("previous log in detected, regenerating session");
+          });
+        } else if (req.session && req.session.userID === user._id) {
+          console.log("user already logged in");
+          res.status(200).json({ message: "user already logged in" });
+        }
         console.log("Correct Password - logging in");
         req.session.userId = user._id;
-        req.session.role = user.admin ? "admin" : "false"; // Store user ID in session
-        res.status(200).json({ message: "user logged in successfully" });
+        req.session.role = user.admin ? "admin" : "user"; // Store user ID in session
+        res.status(200).json({
+          message: "user logged in successfully",
+          user_name: user.user_name,
+          userID: user._id,
+          userRole: user.admin ? "admin" : "user",
+        });
       }
     }
   } catch (err) {
@@ -98,21 +119,38 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.post("/logout", async (req, res) => {
+  try {
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          res.sendStatus(500);
+          console.error(err);
+        } else {
+          res.clearCookie(req.cookies.yourSessionCookieName);
+          res.send(200).json({ message: "user successfully logged out" });
+        }
+      });
+    }
+  } catch (err) {
+    res.send(500).json({ message: "Error logging out user - try again" });
+    console.error("error logging out", err);
+  }
+});
 app.post("/guest", async (req, res) => {
   try {
     console.log("guest user logging in ");
 
     if (req.session && req.session.role) {
-      req.session.destroy((err) => {
+      console.log("regenerating session");
+
+      req.session.regenerate((err) => {
         if (err) {
           console.log(err);
           return res
             .status(500)
-            .json({ message: "error logging out previous session", err });
+            .json({ message: "error regenerating session", err });
         }
-
-        // Regenerate the session after destroy
-        req.session = req.sessionStore.generate(req);
         req.session.role = "guest";
         console.log("successful guest login on server side");
         return res.status(200).json({ message: "guest login successful" });
@@ -128,6 +166,24 @@ app.post("/guest", async (req, res) => {
   }
 });
 
+app.get("/validate-session", async (req, res) => {
+  try {
+    if (req.session && req.session.role === ("user" || "admin")) {
+      res.status(200).json({
+        isLoggedIn: true,
+        userID: req.session.userId,
+        userRole: req.session.role,
+      });
+    } else if (req.session && req.session.role === "guest") {
+      res.status(200).json({ isLoggedIn: true, userRole: "guest" });
+    } else {
+      res.status(200).json({ isLoggedIn: false });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "error getting session validation" });
+    console.error(error);
+  }
+});
 //Define routes
 app.put("/submit/question", async (req, res) => {
   console.log("receiving new question");
@@ -220,7 +276,11 @@ app.get("/questions", async (req, res) => {
         .exec();
       questions = question ? [question] : [];
     } else {
-      questions = await Question.find(query).populate("answers").exec();
+      questions = await Question.find(query)
+        .populate("answers")
+        .populate("tags")
+        .populate('asked_by')
+        .exec();
     }
 
     if (sort === "newest") {

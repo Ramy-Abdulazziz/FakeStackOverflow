@@ -6,6 +6,7 @@ import Link from "@mui/material/Link";
 
 export default function Header({ loggedIn = false }) {
   let status = loggedIn === true ? "Logout" : "Login";
+  
   return (
     <AppBar
       position="static"
@@ -43,7 +44,7 @@ export default function Header({ loggedIn = false }) {
             Tags
           </Link>
         </nav> */}
-        <nav>
+        {/* <nav>
           <Link
             variant="button"
             color="text.primary"
@@ -52,8 +53,12 @@ export default function Header({ loggedIn = false }) {
           >
             Questions
           </Link>
-        </nav>
-        <Button href="#" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+        </nav> */}
+        <Button
+          href={status ? "/" : "/home"}
+          variant="outlined"
+          sx={{ my: 1, mx: 1.5 }}
+        >
           {status}
         </Button>
       </Toolbar>

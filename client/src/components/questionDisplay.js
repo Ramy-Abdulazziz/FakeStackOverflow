@@ -3,9 +3,14 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
+import Paper from "@mui/material/Paper";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ToggleButton from "@mui/material/ToggleButton";
+
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Container, Grid } from "@mui/material";
 import { useState } from "react";
+import FormatDateText from "../dateTextUtils";
 
 function SingleQuestionContainer({ question }) {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -15,7 +20,8 @@ function SingleQuestionContainer({ question }) {
       <Box
         sx={{
           width: 800,
-          height: 275,
+          height: 200,
+          borderRadius: 5,
           backgroundColor: (theme) =>
             theme.palette.mode === "dark" ? "#121212" : "#fff",
         }}
@@ -32,7 +38,7 @@ function SingleQuestionContainer({ question }) {
           <Grid
             item
             sx={{
-              ml: 3,
+              ml: 5,
               mt: 2,
             }}
           >
@@ -83,10 +89,10 @@ function SingleQuestionContainer({ question }) {
           </Grid>
           <Grid item sx={{ mt: 2 }}>
             <Typography component="p" color={"grey"}>
-              asked by {question.asked_by}
+              asked by {question.asked_by.user_name}
             </Typography>
             <Typography component="p" color={"grey"}>
-              on {question.ask_date}
+              {FormatDateText.formatDateText(question.ask_date)}
             </Typography>
           </Grid>
           <Grid item>
@@ -94,7 +100,7 @@ function SingleQuestionContainer({ question }) {
               container
               spacing={2}
               direction="row"
-              ml={18}
+              ml={15}
               sx={{
                 alignItems: "center",
               }}
@@ -118,6 +124,7 @@ function SingleQuestionContainer({ question }) {
 export default function QuestionDisplay({ questions }) {
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 5;
+  console.log(questions);
 
   const indexOfLastQuestion = currentPage * questionsPerPage;
   const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
@@ -133,8 +140,19 @@ export default function QuestionDisplay({ questions }) {
   };
 
   return (
-    <div >
-      <Container class="questionDisplay">
+    <div>
+      <Container
+        className="questionDisplay"
+        sx={{
+          mt: 10,
+          mr: 10,
+        }}
+      >
+          <ToggleButtonGroup color="primary" exclusive aria-label="Platform">
+            <ToggleButton value="newest">Newest</ToggleButton>
+            <ToggleButton value="active">Active</ToggleButton>
+            <ToggleButton value="unanswered">Unanswered</ToggleButton>
+          </ToggleButtonGroup>
         {currentQuestions.map((q, index) => (
           <SingleQuestionContainer key={index} question={q} />
         ))}
@@ -145,6 +163,7 @@ export default function QuestionDisplay({ questions }) {
         hidePrevButton={currentPage === 1}
         onChange={handlePageChange}
         page={currentPage}
+        sx={{ ml: 50 }}
       />
     </div>
   );

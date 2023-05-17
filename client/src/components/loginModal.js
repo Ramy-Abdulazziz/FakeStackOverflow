@@ -7,9 +7,10 @@ import Container from "@mui/material/Container";
 import Link from "@mui/material/Link";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import AuthContext from "./authContext";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
 
 import Header from "./header";
@@ -21,14 +22,17 @@ export default function LoginModal({ username }) {
   const [loginError, setLoginError] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const { handleSubmit, control } = useForm();
+  const authContext = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogin = async (data) => {
     try {
       await axios.post("http://localhost:8000/login", data).then((response) => {
         if (response.status === 200) {
+          authContext.onLogin(response.data);
+          console.log(response.data);
           setLoginSuccess(true);
-          navigate("/qtest");
+          navigate("/home");
         } else {
           setLoginError(true);
         }
@@ -43,7 +47,8 @@ export default function LoginModal({ username }) {
     try {
       await axios.post("http://localhost:8000/guest").then((response) => {
         if (response.status === 200) {
-          navigate("/qtest");
+          authContext.onLogin(response.data);
+          navigate("/home");
         } else {
           setLoginError(true);
         }
@@ -126,12 +131,7 @@ export default function LoginModal({ username }) {
                 }}
               >
                 <Grid item xs="auto">
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    onClick={handleLogin}
-                    sx={{ mt: 3 }}
-                  >
+                  <Button type="submit" variant="contained" sx={{ mt: 3 }}>
                     Sign In
                   </Button>
                 </Grid>

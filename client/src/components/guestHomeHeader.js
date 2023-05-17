@@ -51,7 +51,7 @@ const Search = styled("div")(({ theme }) => ({
     width: "auto",
   },
 }));
-export default function GuestHeader() {
+export default function HomeHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = (event) => {

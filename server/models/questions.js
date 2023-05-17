@@ -10,7 +10,7 @@ var QuestionSchema = new Schema({
   tags: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
   answers: [{ type: Schema.Types.ObjectId, ref: "Answer" }],
   comments:[{type: Schema.Types.ObjectId, ref: "Comment"}],
-  asked_by: { type: String, default: "Anonymous" },
+  asked_by: { type: Schema.Types.ObjectId, ref:"User" },
   ask_date: { type: Date, default: Date.now },
   views: { type: Number, default: 0 },
   upvotes: {type:Number, default: 0}
