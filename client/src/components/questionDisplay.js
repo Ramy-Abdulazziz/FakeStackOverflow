@@ -118,7 +118,7 @@ function SingleQuestionContainer({ question }) {
   );
 }
 
-export default function QuestionDisplay({ questions }) {
+export default function QuestionDisplay({ questions, cls }) {
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 5;
 
@@ -136,26 +136,22 @@ export default function QuestionDisplay({ questions }) {
   };
 
   return (
-    <div>
-      <Container
-        className="questionDisplay"
-        sx={{
-          mt: 10,
-          mr: 10,
-        }}
-      >
+    <>
+      <Container className={cls} sx={{}}>
         {currentQuestions.map((q, index) => (
           <SingleQuestionContainer key={index} question={q} />
         ))}
       </Container>
-      <Pagination
-        boundaryCount={2}
-        count={totalPages}
-        hidePrevButton={currentPage === 1}
-        onChange={handlePageChange}
-        page={currentPage}
-        sx={{ ml: 50 }}
-      />
-    </div>
+      <div className="pagination-home">
+        <Pagination
+          boundaryCount={2}
+          count={totalPages}
+          hidePrevButton={currentPage === 1}
+          onChange={handlePageChange}
+          page={currentPage}
+          sx={{}}
+        />
+      </div>
+    </>
   );
 }

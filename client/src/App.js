@@ -12,6 +12,7 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import AuthContextProvider from "./components/AuthContextProvider";
 import HomePage from "./components/homePage";
+import QuestionContextProvider from "./components/questionContextProvider";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -20,16 +21,18 @@ function App() {
 
   return (
     <AuthContextProvider>
-      <ThemeProvider theme={darkTheme}>
-        <Router>
-          <Routes>
-            <Route path="/" element={<LoginModal />} />
-            <Route path="/sign-up" element={<SignUpModal />} />
-            <Route path="/qtest" element={<QuestionDisplay />} />
-            <Route path="/home" element={<HomePage />} />
-          </Routes>
-        </Router>
-      </ThemeProvider>
+      <QuestionContextProvider>
+        <ThemeProvider theme={darkTheme}>
+          <Router>
+            <Routes>
+              <Route path="/" element={<LoginModal />} />
+              <Route path="/sign-up" element={<SignUpModal />} />
+              <Route path="/qtest" element={<QuestionDisplay />} />
+              <Route path="/home" element={<HomePage />} />
+            </Routes>
+          </Router>
+        </ThemeProvider>
+      </QuestionContextProvider>
     </AuthContextProvider>
   );
 }

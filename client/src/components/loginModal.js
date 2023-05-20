@@ -16,6 +16,7 @@ import axios from "axios";
 import Header from "./header";
 
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import QuestionContext from "./questionContext";
 
 export default function LoginModal({ username }) {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -23,6 +24,7 @@ export default function LoginModal({ username }) {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const { handleSubmit, control } = useForm();
   const authContext = useContext(AuthContext);
+  const questionContext = useContext(QuestionContext);
   const navigate = useNavigate();
 
   const handleLogin = async (data) => {
@@ -48,6 +50,7 @@ export default function LoginModal({ username }) {
       await axios.post("http://localhost:8000/guest").then((response) => {
         if (response.status === 200) {
           authContext.onLogin(response.data);
+          questionContext.fetchAll();
           navigate("/home");
         } else {
           setLoginError(true);

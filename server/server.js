@@ -45,6 +45,7 @@ const Tag = require("./models/tags");
 const User = require("./models/user");
 const Comment = require("./models/comments");
 const { restart } = require("nodemon");
+const questions = require("./models/questions");
 
 //middleware authentication
 const store = new MongoDBStore({
@@ -239,6 +240,22 @@ app.put("/submit/:id/answer", async (req, res) => {
   }
 });
 
+app.get("/questions/user/:id", async (req, res) => {
+  console.log("received request for user questions");
+
+  try {
+    const user_id = req.params.id;
+    const userQuestions = await questions.find({ user_id: user_id });
+
+    res
+      .status(200)
+      .json({ message: "found all user questions - sending questions" });
+  } catch (err) {
+    console.error(err);
+    res.send(400).json({ message: "failed to retrieve user questions" });
+  }
+});
+
 app.get("/questions", async (req, res) => {
   console.log("Received request for questions");
   console.log(req.sort);
@@ -269,7 +286,7 @@ app.get("/questions", async (req, res) => {
     }
 
     console.log("Query object:", query); // Add this line
-
+    let questions; 
     if (id) {
       const question = await Question.findOne({ _id: id })
         .populate("answers")

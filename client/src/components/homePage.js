@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import InputBase from "@mui/material/InputBase";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
+import Skeleton from "@mui/material/Skeleton";
 import Button from "@mui/material/Button";
 import { useState, useContext, useEffect } from "react";
 import { Link } from "@mui/material";
@@ -16,6 +17,7 @@ import Paper from "@mui/material/Paper";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ToggleButton from "@mui/material/ToggleButton";
 import axios from "axios";
+import QuestionContext from "./questionContext";
 
 const SearchIconWrapper = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 2),
@@ -73,7 +75,7 @@ function HomeHeader() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="static" className="header">
         <Toolbar>
           <IconButton
             size="large"
@@ -114,29 +116,63 @@ function HomeHeader() {
 }
 
 export default function HomePage() {
+  const questionContext = useContext(QuestionContext);
   const authContext = useContext(AuthContext);
 
+  useEffect(() => {
+    const getQuestions = async () => {
+      questionContext.fetchAll();
+
+      if (authContext.isLoggedIn) {
+        questionContext.fetchAllUserQuestions();
+      }
+    };
+
+    getQuestions();
+  }, []);
+
   const handleNewestSort = async () => {
-    authContext.onSort({ sort: "newest" });
+    questionContext.onSort({ sort: "newest" });
   };
 
   const handleActiveSort = async () => {
-    authContext.onSort({ sort: "active" });
+    questionContext.onSort({ sort: "active" });
   };
 
   const handleUnanswered = async () => {
-    authContext.onSort({ unanswered: true });
+    questionContext.onSort({ unanswered: true });
   };
 
   return (
     <>
       <HomeHeader />
-      <ToggleButtonGroup color="primary" exclusive aria-label="Platform">
-        <ToggleButton value="newest" onClick={handleNewestSort}>Newest</ToggleButton>
-        <ToggleButton value="active" onClick={handleActiveSort}>Active</ToggleButton>
-        <ToggleButton value="unanswered" onClick= {handleUnanswered}>Unanswered</ToggleButton>
+      <ToggleButtonGroup
+        className="filterButtonGroup"
+        color="primary"
+        exclusive
+        aria-label="Platform"
+      >
+        <ToggleButton value="newest" onClick={handleNewestSort}>
+          Newest
+        </ToggleButton>
+        <ToggleButton value="active" onClick={handleActiveSort}>
+          Active
+        </ToggleButton>
+        <ToggleButton value="unanswered" onClick={handleUnanswered}>
+          Unanswered
+        </ToggleButton>
       </ToggleButtonGroup>
-      <QuestionDisplay questions={authContext.allQuestions} />{" "}
+      {questionContext.isLoading ? (
+        <Skeleton variant="rectangular">
+          <QuestionDisplay />
+        </Skeleton>
+      ) : (
+        <QuestionDisplay
+          cls={"qDisplayHome"}
+          questions={questionContext.allQuestions}
+        />
+      )}
+
       {/* Conditionally render the QuestionDisplay component */}
     </>
   );
