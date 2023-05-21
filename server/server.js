@@ -128,10 +128,12 @@ app.post("/logout", async (req, res) => {
           res.sendStatus(500);
           console.error(err);
         } else {
-          res.clearCookie(req.cookies.yourSessionCookieName);
-          res.send(200).json({ message: "user successfully logged out" });
+          res.clearCookie("connect.sid");
+          res.status(200).json({ message: "user successfully logged out" });
         }
       });
+    } else {
+      res.send(200).json({ message: "user is not logged in" });
     }
   } catch (err) {
     res.send(500).json({ message: "Error logging out user - try again" });

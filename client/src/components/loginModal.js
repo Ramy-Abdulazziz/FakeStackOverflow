@@ -10,7 +10,7 @@ import Alert from "@mui/material/Alert";
 import AuthContext from "./authContext";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 
 import Header from "./header";
@@ -27,6 +27,19 @@ export default function LoginModal({ username }) {
   const questionContext = useContext(QuestionContext);
   const navigate = useNavigate();
 
+
+  useEffect(() => {
+
+    const checkLoginStatus = async () => {
+
+      if (authContext.isLoggedIn && !authContext.userRole === 'guest'){
+
+        navigate("/home")
+      }
+    }
+
+    checkLoginStatus(); 
+  }, [authContext.isLoggedIn, authContext.userRole, navigate])
   const handleLogin = async (data) => {
     try {
       await axios.post("http://localhost:8000/login", data).then((response) => {
@@ -68,7 +81,7 @@ export default function LoginModal({ username }) {
   };
   return (
     <ThemeProvider theme={darkTheme}>
-      <Header loggedIn={false} />
+      <Header />
       <Container component="main" maxWidth="xs">
         <form onSubmit={handleSubmit(handleLogin)}>
           <Paper

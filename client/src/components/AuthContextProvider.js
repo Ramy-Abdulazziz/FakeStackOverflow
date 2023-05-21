@@ -6,6 +6,7 @@ export default function AuthContextProvider({ children }) {
   const [userName, setUserName] = useState("");
   const [userId, setUserId] = useState("");
   const [userRole, setUserRole] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -37,7 +38,6 @@ export default function AuthContextProvider({ children }) {
       setUserName(data.user_name);
       setUserId(data.userID);
       setUserRole(data.userRole);
-      
     } else {
       setIsLoggedIn(true);
       setUserName("Guest");
@@ -49,6 +49,7 @@ export default function AuthContextProvider({ children }) {
   const logoutHandler = async () => {
     try {
       await axios.post("http://localhost:8000/logout").then((response) => {
+        console.log(response.status);
         if (response.status === 200) {
           setIsLoggedIn(false);
           setUserName("");
@@ -57,11 +58,11 @@ export default function AuthContextProvider({ children }) {
         }
       });
     } catch (err) {
+      setIsLoading(false);
+
       console.error("unable to log out", err);
     }
   };
-
-  
 
   const contextValue = useMemo(
     () => ({

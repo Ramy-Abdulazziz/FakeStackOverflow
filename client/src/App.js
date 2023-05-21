@@ -27,7 +27,6 @@ function App() {
             <Routes>
               <Route path="/" element={<LoginModal />} />
               <Route path="/sign-up" element={<SignUpModal />} />
-              <Route path="/qtest" element={<QuestionDisplay />} />
               <Route path="/home" element={<HomePage />} />
             </Routes>
           </Router>

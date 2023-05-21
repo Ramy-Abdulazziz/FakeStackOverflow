@@ -22,7 +22,7 @@ export default function HomePage() {
       setCurrentQuestions(questionContext.allQuestions);
 
       if (authContext.isLoggedIn) {
-        questionContext.fetchAllUserQuestions();
+        questionContext.fetchUser();
       }
     };
 
@@ -60,7 +60,7 @@ export default function HomePage() {
   return (
     <>
       <Typography className="numQuestions" variant="h3">
-        {currentQuestions.length} Questions{" "}
+        {currentQuestions.length === 0 ? "No Questions Found" : `${currentQuestions.length} Questions`}
       </Typography>
       <Header />
       <ToggleButtonGroup

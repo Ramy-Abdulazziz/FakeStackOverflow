@@ -8,5 +8,6 @@ const AuthContext = createContext({
   allQuestions: [],
   onLogin: () => {},
   onLogout: () => {},
+  isLoading : false,
 });
 export default AuthContext;

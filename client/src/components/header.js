@@ -93,7 +93,7 @@ export default function Header() {
           >
             FakeStackOverflow
           </Typography>
-
+          {authContext.isLoggedIn ? 
           <Search
             onChange={questionContext.onInputChange}
             onKeyDown={questionContext.onSearch}
@@ -105,10 +105,8 @@ export default function Header() {
               placeholder="Search…"
               inputProps={{ "aria-label": "search" }}
             />
-          </Search>
-          <Button href="#" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-            {authContext.isLoggedIn ? "Log Out" : "Log In"}
-          </Button>
+          </Search> : ""}
+          
         </Toolbar>
       </AppBar>
       <MenuDrawer open={menuOpen} setOpen={setMenuOpen} />

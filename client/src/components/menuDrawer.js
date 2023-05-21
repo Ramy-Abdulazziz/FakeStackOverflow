@@ -7,8 +7,27 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import LiveHelpIcon from "@mui/icons-material/LiveHelp";
 import StyleIcon from "@mui/icons-material/Style";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import { Divider } from "@mui/material";
+import { useContext } from "react";
+import AuthContext from "./authContext";
+import { useNavigate } from "react-router";
 
 export default function MenuDrawer({ open, setOpen }) {
+  const authContext = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authContext.onLogout();
+
+      navigate("/");
+    } catch (err) {
+      console.error("Logout failed");
+    }
+  };
   const drawerState = () => {
     if (open) {
       setOpen(false);
@@ -16,6 +35,48 @@ export default function MenuDrawer({ open, setOpen }) {
       setOpen(true);
     }
   };
+
+  const userOptions = () => (
+    <List>
+      <ListItem disablePadding>
+        <ListItemButton>
+          <ListItemIcon>
+            <AccountCircleIcon />
+          </ListItemIcon>
+          <ListItemText primary={authContext.userName} />
+        </ListItemButton>
+      </ListItem>
+      <ListItem disablePadding>
+        <ListItemButton onClick={handleLogout}>
+          <ListItemIcon>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText primary={"Log out"} />
+        </ListItemButton>
+      </ListItem>
+    </List>
+  );
+
+  const guestOptions = () => (
+    <List>
+      <ListItem disablePadding>
+        <ListItemButton onClick={() => navigate("/sign-up")}>
+          <ListItemIcon>
+            <PersonAddIcon />
+          </ListItemIcon>
+          <ListItemText primary={"Sign Up"} />
+        </ListItemButton>
+      </ListItem>
+      <ListItem disablePadding>
+        <ListItemButton onClick={() => navigate("/")}>
+          <ListItemIcon>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText primary={"Log In"} />
+        </ListItemButton>
+      </ListItem>
+    </List>
+  );
 
   const list = () => (
     <Box
@@ -25,6 +86,8 @@ export default function MenuDrawer({ open, setOpen }) {
       onKeyDown={drawerState}
     >
       <List>
+        {authContext.userRole === "user" ? userOptions() : guestOptions()}
+        <Divider />
         <ListItem disablePadding>
           <ListItemButton>
             <ListItemIcon>
