@@ -15,9 +15,10 @@ function SingleQuestionContainer({ question }) {
   return (
     <ThemeProvider theme={darkTheme}>
       <Box
+        className="singleQuestionContainer"
         sx={{
-          width: 800,
-          height: 200,
+          // width: auto,
+          // height: 200,
           borderRadius: 5,
           backgroundColor: (theme) =>
             theme.palette.mode === "dark" ? "#121212" : "#fff",
@@ -137,7 +138,7 @@ export default function QuestionDisplay({ questions, cls }) {
 
   return (
     <>
-      <Container className={cls} sx={{}}>
+      <Container className={cls} sx={{ }}>
         {currentQuestions.map((q, index) => (
           <SingleQuestionContainer key={index} question={q} />
         ))}

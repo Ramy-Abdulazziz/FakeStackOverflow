@@ -286,7 +286,7 @@ app.get("/questions", async (req, res) => {
     }
 
     console.log("Query object:", query); // Add this line
-    let questions; 
+    let questions;
     if (id) {
       const question = await Question.findOne({ _id: id })
         .populate("answers")
@@ -359,7 +359,11 @@ app.get("/search", async (req, res) => {
       const linkRegex = new RegExp("\\[([^\\s\\]]+)\\]\\((.*?)\\)", "g");
       const questionsWithLinks = await Question.find({
         text: { $regex: linkRegex },
-      });
+      })
+        .populate("answers")
+        .populate("tags")
+        .populate("asked_by")
+        .exec();
       const foundQuestions = questionsWithLinks.filter((q) => {
         const links = q.text.match(linkRegex);
         return links.some((link) => {
@@ -375,7 +379,11 @@ app.get("/search", async (req, res) => {
   }
 
   try {
-    const foundQuestions = await Question.find(searchQuery);
+    const foundQuestions = await Question.find(searchQuery)
+      .populate("answers")
+      .populate("tags")
+      .populate("asked_by")
+      .exec();
     res.json(foundQuestions);
   } catch (err) {
     console.error("Error searching questions:", err);

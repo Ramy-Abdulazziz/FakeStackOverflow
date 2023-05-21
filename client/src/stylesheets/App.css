@@ -1,72 +1,71 @@
 /* Add your CSS here */
-html{
-    background-color: #1A2027;
-
+html {
+  background-color: #1a2027;
 }
 
-.questionDisplay{
-    overflow-y: auto;
-    width: 100%;
-    max-height: 600px;
-    margin-bottom: 10px;
-  }
+.questionDisplay {
+  overflow-y: auto;
+  width: 100%;
+  max-height: 600px;
+  margin-bottom: 10px;
+}
 
+html {
+  display: grid;
+  grid-template-columns: 10% 15% 25% 25% 25%;
+  grid-template-rows: 10% 10% 5% 25% 25% 25%;
+  height: 100%;
+  width: 100%;
+}
+#root {
+  display: grid;
+  grid-template: repeat(40, 2.5%) / repeat(40, 2.5%);
+  grid-column: 1/8;
+  grid-row: 1/8;
+  margin: 0;
+}
 
-  html {
-    display: grid;
-    grid-template-columns: 10% 15% 25% 25% 25%;
-    grid-template-rows: 10% 10% 5% 25% 25% 25%;
-    height: 100%;
-    width: 100%;
-  }
-  #root{
+body {
+  display: grid;
+  /* grid-template-columns: 10% 5% 10% 25% 25% 25%; */
+  /* grid-template-rows: 10% 5% 5% 5% 25% 25% 25%; */
+  grid-column: 1/8;
+  grid-row: 1/8;
+  /* grid-template-rows: auto;  */
+  margin: 0;
+}
 
-    display: grid;
-    grid-template: repeat(40, 2.5%) / repeat(40, 2.5%);
-    grid-column: 1/8;
-    grid-row: 1/8;
-    margin: 0;
-    overflow: auto;
-    
-  }
+.header {
+  grid-column: 1/44;
+  grid-row: 1/4;
+}
 
-  body {
-    display: grid;
-    /* grid-template-columns: 10% 5% 10% 25% 25% 25%; */
-    /* grid-template-rows: 10% 5% 5% 5% 25% 25% 25%; */
-    grid-column: 1/8;
-    grid-row: 1/8;
-    /* grid-template-rows: auto;  */
-    margin: 0;
-    overflow: auto;
-  }
+.filterButtonGroup {
+  grid-column: 17;
+  grid-row: 13/15;
+}
 
-  .header{
+.qDisplayHome {
+  grid-row: 17;
+  grid-column: 10;
+  margin-left: 25px;
+}
 
-    grid-column: 1/44;
-    grid-row:1/4;
+.pagination-home {
+  grid-row: 38;
+  grid-column: 20/25;
+  display: flex;
+}
 
-  }
+.numQuestions {
+  grid-column: 17/24;
+  grid-row: 7;
+  color: grey;
+  width: 100%;
+  font-size: 65px;
+}
 
-  .filterButtonGroup{
-
-    grid-column: 17;
-    grid-row:7/9
-  }
-  
-
-  .qDisplayHome{
-
-    grid-row:10/20;
-    grid-column: 10;
-    width:100%;
-    margin-left: 20px;
-  }
-
-  .pagination-home{
-
-    grid-row:38;
-    grid-column: 20/25;
-    display: block;
-    display: flex;
-  }
+.singleQuestionContainer {
+  width: 800px;
+  height: 200px;
+}
