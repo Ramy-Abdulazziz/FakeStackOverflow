@@ -15,6 +15,7 @@ import AuthContextProvider from "./components/AuthContextProvider";
 import HomePage from "./components/homePage";
 import QuestionContextProvider from "./components/questionContextProvider";
 import Header from "./components/header";
+import Box from "@mui/material/Box";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -27,6 +28,7 @@ function App() {
         <ThemeProvider theme={darkTheme}>
           <Router>
             <Header />
+            <Box sx={{maxHeight:'100%'}}>
             <Container sx={{ maxWidth: "100%" }}>
               <Routes>
                 <Route path="/" element={<LoginModal />} />
@@ -34,6 +36,7 @@ function App() {
                 <Route path="/home" element={<HomePage />} />
               </Routes>
             </Container>
+            </Box>
           </Router>
         </ThemeProvider>
       </QuestionContextProvider>

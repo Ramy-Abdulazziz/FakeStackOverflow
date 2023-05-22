@@ -8,6 +8,8 @@ import Paper from "@mui/material/Paper";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ToggleButton from "@mui/material/ToggleButton";
 import QuestionContext from "./questionContext";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
 import Header from "./header";
 
 export default function HomePage() {
@@ -58,7 +60,7 @@ export default function HomePage() {
   };
 
   return (
-    <>
+    <Container sx={{ maxHeight:'100%' }}>
       <Typography
         className="numQuestions"
         variant="h3"
@@ -81,9 +83,7 @@ export default function HomePage() {
           color="primary"
           exclusive
           aria-label="Platform"
-          sx={{
-           
-          }}
+          sx={{}}
         >
           <ToggleButton value="newest" onClick={handleNewestSort}>
             Newest
@@ -103,6 +103,6 @@ export default function HomePage() {
       ) : (
         <QuestionDisplay cls={"qDisplayHome"} questions={currentQuestions} />
       )}
-    </>
+    </Container>
   );
 }

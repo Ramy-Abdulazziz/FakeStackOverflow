@@ -16,18 +16,8 @@ function SingleQuestionContainer({ question }) {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      {/* <Box
-        className="singleQuestionContainer"
-        sx={{
-          maxwidth: "sm",
-          // height: 200,
-          borderRadius: 5,
-          backgroundColor: (theme) =>
-            theme.palette.mode === "dark" ? "#121212" : "#fff",
-        }}
-      > */}
       <Container>
-        <Paper>
+        <Paper elevation={2} sx={{ mb: 2, mt: 2, borderRadius: 2 }}>
           <Grid
             container
             spacing={10}
@@ -134,8 +124,8 @@ function SingleQuestionContainer({ question }) {
                     <Grid item>
                       <Button>
                         <ThumbUpAltIcon />
-                        <Typography component="p" color={"grey"} sx={{ml:2}}>
-                           {question.upvotes}
+                        <Typography component="p" color={"grey"} sx={{ ml: 2 }}>
+                          {question.upvotes}
                         </Typography>
                       </Button>
                     </Grid>
@@ -173,12 +163,16 @@ export default function QuestionDisplay({ questions, cls }) {
   };
 
   return (
-    <Box>
-      <Container sx={{}}>
-        {currentQuestions.map((q, index) => (
-          <SingleQuestionContainer key={index} question={q} />
-        ))}
-      </Container>
+    <>
+      <Box sx={{ maxHeight: "100%", overflow: "auto" }}>
+        <Container sx={{}}>
+          <Paper elevation={1} variant="outlined" sx={{ borderRadius: 2 }}>
+            {currentQuestions.map((q, index) => (
+              <SingleQuestionContainer key={index} question={q} />
+            ))}
+          </Paper>
+        </Container>
+      </Box>
       <div className="pagination-home">
         <Pagination
           boundaryCount={2}
@@ -189,6 +183,6 @@ export default function QuestionDisplay({ questions, cls }) {
           sx={{}}
         />
       </div>
-    </Box>
+    </>
   );
 }
