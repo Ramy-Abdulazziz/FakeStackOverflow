@@ -6,6 +6,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import SignUpModal from "./components/signUpModal";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LoginModal from "./components/loginModal";
+import { Container } from "@mui/material";
 import MockQuestions from "./components/mockQuestions";
 import QuestionDisplay from "./components/questionDisplay";
 import { useState, useEffect, useContext } from "react";
@@ -13,6 +14,7 @@ import axios from "axios";
 import AuthContextProvider from "./components/AuthContextProvider";
 import HomePage from "./components/homePage";
 import QuestionContextProvider from "./components/questionContextProvider";
+import Header from "./components/header";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -24,11 +26,14 @@ function App() {
       <QuestionContextProvider>
         <ThemeProvider theme={darkTheme}>
           <Router>
-            <Routes>
-              <Route path="/" element={<LoginModal />} />
-              <Route path="/sign-up" element={<SignUpModal />} />
-              <Route path="/home" element={<HomePage />} />
-            </Routes>
+            <Header />
+            <Container sx={{ maxWidth: "100%" }}>
+              <Routes>
+                <Route path="/" element={<LoginModal />} />
+                <Route path="/sign-up" element={<SignUpModal />} />
+                <Route path="/home" element={<HomePage />} />
+              </Routes>
+            </Container>
           </Router>
         </ThemeProvider>
       </QuestionContextProvider>

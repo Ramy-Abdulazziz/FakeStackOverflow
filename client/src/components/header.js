@@ -13,7 +13,7 @@ import AuthContext from "./authContext";
 import axios from "axios";
 import Link from "@mui/material/Link";
 import QuestionContext from "./questionContext";
-
+import { useLocation } from "react-router";
 const SearchIconWrapper = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 2),
   height: "100%",
@@ -57,8 +57,9 @@ const Search = styled("div")(({ theme }) => ({
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const authContext = useContext(AuthContext);
   const questionContext = useContext(QuestionContext);
+
+  const location = useLocation();
 
   const toggleMenu = (event) => {
     if (menuOpen) {
@@ -69,7 +70,6 @@ export default function Header() {
       setMenuOpen(true);
     }
   };
-
 
   return (
     <>
@@ -93,20 +93,22 @@ export default function Header() {
           >
             FakeStackOverflow
           </Typography>
-          {authContext.isLoggedIn ? 
-          <Search
-            onChange={questionContext.onInputChange}
-            onKeyDown={questionContext.onSearch}
-          >
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ "aria-label": "search" }}
-            />
-          </Search> : ""}
-          
+          {location.pathname !== "/" && location.pathname !== "/sign-up" ? (
+            <Search
+              onChange={questionContext.onInputChange}
+              onKeyDown={questionContext.onSearch}
+            >
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder="Search…"
+                inputProps={{ "aria-label": "search" }}
+              />
+            </Search>
+          ) : (
+            ""
+          )}
         </Toolbar>
       </AppBar>
       <MenuDrawer open={menuOpen} setOpen={setMenuOpen} />

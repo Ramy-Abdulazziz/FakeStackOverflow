@@ -59,26 +59,43 @@ export default function HomePage() {
 
   return (
     <>
-      <Typography className="numQuestions" variant="h3">
-        {currentQuestions.length === 0 ? "No Questions Found" : `${currentQuestions.length} Questions`}
-      </Typography>
-      <Header />
-      <ToggleButtonGroup
-        className="filterButtonGroup"
-        color="primary"
-        exclusive
-        aria-label="Platform"
+      <Typography
+        className="numQuestions"
+        variant="h3"
+        sx={{
+          maxWidth: 300,
+          ml: "auto",
+          mr: "auto",
+          mt: 5,
+          mb: 5,
+          paddingLeft: 10,
+          paddingRight: 10,
+        }}
       >
-        <ToggleButton value="newest" onClick={handleNewestSort}>
-          Newest
-        </ToggleButton>
-        <ToggleButton value="active" onClick={handleActiveSort}>
-          Active
-        </ToggleButton>
-        <ToggleButton value="unanswered" onClick={handleUnanswered}>
-          Unanswered
-        </ToggleButton>
-      </ToggleButtonGroup>
+        {currentQuestions.length === 0
+          ? "No Questions Found"
+          : `${currentQuestions.length} Questions`}
+      </Typography>
+      <div className="filterButtonGroup">
+        <ToggleButtonGroup
+          color="primary"
+          exclusive
+          aria-label="Platform"
+          sx={{
+           
+          }}
+        >
+          <ToggleButton value="newest" onClick={handleNewestSort}>
+            Newest
+          </ToggleButton>
+          <ToggleButton value="active" onClick={handleActiveSort}>
+            Active
+          </ToggleButton>
+          <ToggleButton value="unanswered" onClick={handleUnanswered}>
+            Unanswered
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </div>
       {questionContext.isLoading ? (
         <Skeleton variant="rectangular">
           <QuestionDisplay />

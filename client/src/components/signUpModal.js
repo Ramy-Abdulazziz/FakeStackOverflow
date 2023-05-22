@@ -15,7 +15,6 @@ export default function SignUpModal() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Header />
       <Container component="main" maxWidth="xs">
         <Paper
           sx={{

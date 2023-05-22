@@ -17,7 +17,7 @@ function SingleQuestionContainer({ question }) {
       <Box
         className="singleQuestionContainer"
         sx={{
-          // width: auto,
+          maxwidth: "sm",
           // height: 200,
           borderRadius: 5,
           backgroundColor: (theme) =>
@@ -137,8 +137,8 @@ export default function QuestionDisplay({ questions, cls }) {
   };
 
   return (
-    <>
-      <Container className={cls} sx={{ }}>
+    <Box>
+      <Container  sx={{  mr:50, maxwidth:500}}>
         {currentQuestions.map((q, index) => (
           <SingleQuestionContainer key={index} question={q} />
         ))}
@@ -153,6 +153,6 @@ export default function QuestionDisplay({ questions, cls }) {
           sx={{}}
         />
       </div>
-    </>
+    </Box>
   );
 }

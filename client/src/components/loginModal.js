@@ -27,19 +27,15 @@ export default function LoginModal({ username }) {
   const questionContext = useContext(QuestionContext);
   const navigate = useNavigate();
 
-
   useEffect(() => {
-
     const checkLoginStatus = async () => {
-
-      if (authContext.isLoggedIn && !authContext.userRole === 'guest'){
-
-        navigate("/home")
+      if (authContext.isLoggedIn && !authContext.userRole === "guest") {
+        navigate("/home");
       }
-    }
+    };
 
-    checkLoginStatus(); 
-  }, [authContext.isLoggedIn, authContext.userRole, navigate])
+    checkLoginStatus();
+  }, [authContext.isLoggedIn, authContext.userRole, navigate]);
   const handleLogin = async (data) => {
     try {
       await axios.post("http://localhost:8000/login", data).then((response) => {
@@ -81,8 +77,7 @@ export default function LoginModal({ username }) {
   };
   return (
     <ThemeProvider theme={darkTheme}>
-      <Header />
-      <Container component="main" maxWidth="xs">
+      <Container className="login-modal" component="main" maxWidth="xs">
         <form onSubmit={handleSubmit(handleLogin)}>
           <Paper
             sx={{
@@ -170,18 +165,19 @@ export default function LoginModal({ username }) {
               type="button"
               variant="contained"
               onClick={handleGuestLogin}
-              sx={{ mt: 3, ml: 3 }}
+              sx={{ mt: 3, ml: 2 }}
             >
               Continue as Guest
             </Button>
           </Grid>
-          <Grid item>
-            <Link href="/sign-up" variant="body2" sx={{ ml: 2 }}>
+          <Grid item xs="auto">
+            <Link href="/sign-up" variant="body2" sx={{}}>
               {"Don't have an account? Sign Up"}
             </Link>
           </Grid>
         </Grid>
       </Container>
+
       <Snackbar
         open={loginSuccess}
         autoHideDuration={6000}
