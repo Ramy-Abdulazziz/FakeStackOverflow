@@ -3,7 +3,9 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
-
+import Paper from "@mui/material/Paper";
+import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
+import ThumbDownAltIcon from "@mui/icons-material/ThumbDownAlt";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Container, Grid } from "@mui/material";
 import { useState } from "react";
@@ -14,7 +16,7 @@ function SingleQuestionContainer({ question }) {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Box
+      {/* <Box
         className="singleQuestionContainer"
         sx={{
           maxwidth: "sm",
@@ -23,98 +25,132 @@ function SingleQuestionContainer({ question }) {
           backgroundColor: (theme) =>
             theme.palette.mode === "dark" ? "#121212" : "#fff",
         }}
-      >
-        <Grid
-          container
-          spacing={5}
-          direction="row"
-          mt={2}
-          sx={{
-            alignItems: "center",
-          }}
-        >
+      > */}
+      <Container>
+        <Paper>
           <Grid
-            item
+            container
+            spacing={10}
+            direction="row"
+            justifyContent="space-evenly"
             sx={{
-              ml: 5,
-              mt: 2,
-            }}
-          >
-            <Typography component="p" color={"grey"}>
-              {question.answers.length}
-            </Typography>
-            <Typography component="p" color={"grey"}>
-              {question.views} views
-            </Typography>
-          </Grid>
-          <Grid
-            item
-            sx={{
-              flexWrap: "wrap",
+              mt: 1,
             }}
           >
             <Grid
-              container
-              spacing={2}
-              direction="column"
+              item
               sx={{
-                alignItems: "center",
+                ml: 2,
               }}
             >
-              <Grid
-                item
-                sx={{
-                  wordWrap: "break-word",
-                  width: 450,
-                }}
-              >
-                <Link href="/question/:id" variant="body2">
-                  {question.title}
-                </Link>
-              </Grid>
-              <Grid
-                item
-                sx={{
-                  wordWrap: "break-word",
-                  width: 450,
-                }}
-              >
-                <Typography component="p" color={"grey"}>
-                  {question.summary}
-                </Typography>
-              </Grid>
+              <Typography component="p" color={"grey"}>
+                {question.answers.length} answers
+              </Typography>
+              <Typography component="p" color={"grey"}>
+                {question.views} views
+              </Typography>
             </Grid>
-          </Grid>
-          <Grid item sx={{ mt: 2 }}>
-            <Typography component="p" color={"grey"}>
-              asked by {question.asked_by.user_name}
-            </Typography>
-            <Typography component="p" color={"grey"}>
-              {FormatDateText.formatDateText(question.ask_date)}
-            </Typography>
-          </Grid>
-          <Grid item>
             <Grid
-              container
-              spacing={2}
-              direction="row"
-              ml={15}
+              item
               sx={{
-                alignItems: "center",
+                flexWrap: "wrap",
+                width: 500,
               }}
             >
-              {question.tags.map((tag, index) => (
-                <Grid item key={index}>
-                  <Button type="button" variant="contained">
-                    {" "}
-                    {tag.name}
-                  </Button>
+              <Grid
+                container
+                spacing={2}
+                direction="column"
+                justifyContent="flex-start"
+                alignItems="flex-start"
+                sx={{
+                  mb: 2,
+                }}
+              >
+                <Grid
+                  item
+                  sx={{
+                    wordWrap: "break-word",
+                  }}
+                >
+                  <Link href="/question/:id" variant="body2">
+                    {question.title}
+                  </Link>
                 </Grid>
-              ))}
+                <Grid
+                  item
+                  sx={{
+                    wordWrap: "break-word",
+                  }}
+                >
+                  <Typography component="p" color={"grey"}>
+                    {question.summary}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Grid
+                    container
+                    spacing={2}
+                    direction="row"
+                    justifyContent="flex-start"
+                    alignItems="flex-start"
+                    sx={{}}
+                  >
+                    {question.tags.map((tag, index) => (
+                      <Grid item key={index}>
+                        <Button type="button" variant="contained">
+                          {" "}
+                          {tag.name}
+                        </Button>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item>
+              <Grid
+                container
+                spacing={5}
+                direction="column"
+                justifyContent="flex-start"
+                alignItems="flex-start"
+              >
+                <Grid item sx={{}}>
+                  <Typography component="p" color={"grey"}>
+                    asked by {question.asked_by.user_name}
+                  </Typography>
+                  <Typography component="p" color={"grey"}>
+                    {FormatDateText.formatDateText(question.ask_date)}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Grid
+                    container
+                    direction={"row"}
+                    justifyContent="flex-start"
+                    alignItems="flex-start"
+                  >
+                    <Grid item>
+                      <Button>
+                        <ThumbUpAltIcon />
+                        <Typography component="p" color={"grey"} sx={{ml:2}}>
+                           {question.upvotes}
+                        </Typography>
+                      </Button>
+                    </Grid>
+                    <Grid item>
+                      <Button>
+                        <ThumbDownAltIcon />
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
-        </Grid>
-      </Box>
+        </Paper>
+      </Container>{" "}
     </ThemeProvider>
   );
 }
@@ -138,7 +174,7 @@ export default function QuestionDisplay({ questions, cls }) {
 
   return (
     <Box>
-      <Container  sx={{  mr:50, maxwidth:500}}>
+      <Container sx={{}}>
         {currentQuestions.map((q, index) => (
           <SingleQuestionContainer key={index} question={q} />
         ))}
