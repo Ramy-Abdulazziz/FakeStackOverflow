@@ -3,6 +3,23 @@ html {
   background-color: #1a2027;
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+  overflow: hidden;
+  transition: width 0.5s, height 0.5s;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: grey;
+  border-radius: 10px;
+
+}
+
+
 .questionDisplay {
 }
 

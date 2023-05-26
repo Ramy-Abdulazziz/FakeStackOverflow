@@ -164,7 +164,7 @@ export default function QuestionDisplay({ questions, cls }) {
 
   return (
     <>
-      <Box sx={{ maxHeight: "100%", overflow: "auto" }}>
+      <Box sx={{ height: 600, overflow: "auto" }}>
         <Container sx={{}}>
           <Paper elevation={1} variant="outlined" sx={{ borderRadius: 2 }}>
             {currentQuestions.map((q, index) => (
@@ -173,16 +173,16 @@ export default function QuestionDisplay({ questions, cls }) {
           </Paper>
         </Container>
       </Box>
-      <div className="pagination-home">
+      <Container sx={{mt:1}}>
         <Pagination
           boundaryCount={2}
           count={totalPages}
           hidePrevButton={currentPage === 1}
           onChange={handlePageChange}
           page={currentPage}
-          sx={{}}
+          sx={{ml:'50%', mr:'50%', minWidth:100}}
         />
-      </div>
+      </Container>
     </>
   );
 }

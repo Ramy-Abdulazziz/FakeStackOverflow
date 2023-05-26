@@ -58,6 +58,8 @@ store.on("error", function (error) {
   console.error("Error connecting to session storage");
 });
 
+//Create Session Storage for usersessions
+
 app.use(
   session({
     secret: "This is a secret",
@@ -70,6 +72,15 @@ app.use(
   })
 );
 
+/*
+Routes for user authentication: 
+- user login
+- user logout
+- guest login
+- guest logout
+- session validation
+- user sign up
+*/
 app.post("/login", async (req, res) => {
   try {
     console.log("log in attempted");
@@ -140,6 +151,7 @@ app.post("/logout", async (req, res) => {
     console.error("error logging out", err);
   }
 });
+
 app.post("/guest", async (req, res) => {
   try {
     console.log("guest user logging in ");
@@ -185,6 +197,38 @@ app.get("/validate-session", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "error getting session validation" });
     console.error(error);
+  }
+});
+
+app.post("/sign-up", async (req, res) => {
+  try {
+    const userDetails = req.body;
+
+    console.log(userDetails);
+
+    const existingUser = await User.findOne({ email: userDetails.email });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "Email is already registered" });
+    }
+
+    const hashedPass = await bcrypt.hash(userDetails.password, 10); 
+
+    const newUser = new User({
+      user_name: userDetails.username,
+      email: userDetails.email,
+      password: hashedPass,
+    });
+
+
+    await newUser.save();
+
+    return res.status(201).json({ message: "New user added successfully" });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ message: "Error adding user - please try again" });
   }
 });
 //Define routes
