@@ -11,13 +11,26 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { Divider } from "@mui/material";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import AuthContext from "./authContext";
 import { useNavigate } from "react-router";
 
 export default function MenuDrawer({ open, setOpen }) {
+  const [userName, setUserName] = useState("");
   const authContext = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const getUserStatus = async () => {
+      if (authContext.isLoggedIn && authContext.userRole !== "guest") {
+        console.log(authContext);
+        setUserName(authContext.userName);
+      }
+    };
+
+    getUserStatus();
+  }, []);
+
 
   const handleLogout = async () => {
     try {
@@ -43,7 +56,7 @@ export default function MenuDrawer({ open, setOpen }) {
           <ListItemIcon>
             <AccountCircleIcon />
           </ListItemIcon>
-          <ListItemText primary={authContext.userName} />
+          <ListItemText primary={userName} />
         </ListItemButton>
       </ListItem>
       <ListItem disablePadding>

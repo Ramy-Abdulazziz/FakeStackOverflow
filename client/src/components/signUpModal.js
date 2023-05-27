@@ -186,7 +186,14 @@ export default function SignUpModal() {
                 />
                 <Grid item xs="auto">
                   {errors.confirmPassword && (
-                    <Typography component="p">Passwords must match</Typography>
+                    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+                    <Alert
+                      onClose={handleClose}
+                      severity={ "error"}
+                    >
+                      {errors.confirmPassword.message}
+                    </Alert>
+                  </Snackbar>
                   )}
                 </Grid>
               </Grid>

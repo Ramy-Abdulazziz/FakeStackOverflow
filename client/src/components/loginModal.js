@@ -29,7 +29,7 @@ export default function LoginModal({ username }) {
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-      if (authContext.isLoggedIn && !authContext.userRole === "guest") {
+      if (authContext.isLoggedIn) {
         navigate("/home");
       }
     };

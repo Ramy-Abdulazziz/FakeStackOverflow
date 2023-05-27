@@ -212,14 +212,13 @@ app.post("/sign-up", async (req, res) => {
       return res.status(400).json({ message: "Email is already registered" });
     }
 
-    const hashedPass = await bcrypt.hash(userDetails.password, 10); 
+    const hashedPass = await bcrypt.hash(userDetails.password, 10);
 
     const newUser = new User({
       user_name: userDetails.username,
       email: userDetails.email,
       password: hashedPass,
     });
-
 
     await newUser.save();
 
