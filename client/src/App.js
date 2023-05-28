@@ -4,7 +4,12 @@ import "./stylesheets/App.css";
 import FakeStackOverflow from "./components/fakestackoverflow.js";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import SignUpModal from "./components/signUpModal";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useParams,
+} from "react-router-dom";
 import LoginModal from "./components/loginModal";
 import { Container } from "@mui/material";
 import MockQuestions from "./components/mockQuestions";
@@ -17,6 +22,7 @@ import QuestionContextProvider from "./components/questionContextProvider";
 import Header from "./components/header";
 import Box from "@mui/material/Box";
 import TagPage from "./components/tagPage";
+import DetailedQuestionPage from "./components/detailedQuestionPage";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -36,6 +42,10 @@ function App() {
                   <Route path="/sign-up" element={<SignUpModal />} />
                   <Route path="/home" element={<HomePage />} />
                   <Route path="/all-tags" element={<TagPage />} />
+                  <Route
+                    path="/answers/:id"
+                    element={<DetailedQuestionPage />}
+                  />
                 </Routes>
               </Container>
             </Box>

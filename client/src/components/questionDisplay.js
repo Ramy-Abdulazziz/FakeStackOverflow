@@ -63,7 +63,7 @@ function SingleQuestionContainer({ question }) {
                     wordWrap: "break-word",
                   }}
                 >
-                  <Link href="/question/:id" variant="body2">
+                  <Link href={`/answers/${question._id}`} variant="body2">
                     {question.title}
                   </Link>
                 </Grid>
