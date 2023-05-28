@@ -45,7 +45,7 @@ const Tag = require("./models/tags");
 const User = require("./models/user");
 const Comment = require("./models/comments");
 const { restart } = require("nodemon");
-const questions = require("./models/questions");
+
 
 //middleware authentication
 const store = new MongoDBStore({
@@ -290,14 +290,14 @@ app.get("/questions/user/:id", async (req, res) => {
 
   try {
     const user_id = req.params.id;
-    const userQuestions = await questions.find({ user_id: user_id });
+    const userQuestions = await Question.find({ user_id: user_id });
 
     res
       .status(200)
       .json({ message: "found all user questions - sending questions" });
   } catch (err) {
     console.error(err);
-    res.send(400).json({ message: "failed to retrieve user questions" });
+    res.status(400).json({ message: "failed to retrieve user questions" });
   }
 });
 
@@ -457,6 +457,7 @@ app.get("/tags", async (req, res) => {
   }
 });
 
+
 app.get("/tags/:id/name", async (req, res) => {
   console.log("Received request for tagNames");
   try {
@@ -465,6 +466,7 @@ app.get("/tags/:id/name", async (req, res) => {
     const tagId = req.params.id;
     console.log(tagId);
     const tag = await Tag.findById(tagId);
+
 
     if (!tag) {
       return res.status(404).json({ message: "Tag not found" });

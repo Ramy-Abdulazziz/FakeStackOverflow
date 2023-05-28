@@ -14,23 +14,23 @@ import { Divider } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "./authContext";
 import { useNavigate } from "react-router";
+import QuestionContext from "./questionContext";
 
 export default function MenuDrawer({ open, setOpen }) {
   const [userName, setUserName] = useState("");
   const authContext = useContext(AuthContext);
+  const questionContext = useContext(QuestionContext);
   const navigate = useNavigate();
 
   useEffect(() => {
     const getUserStatus = async () => {
       if (authContext.isLoggedIn && authContext.userRole !== "guest") {
-        console.log(authContext);
         setUserName(authContext.userName);
       }
     };
 
     getUserStatus();
-  }, []);
-
+  }, [authContext]);
 
   const handleLogout = async () => {
     try {
@@ -46,6 +46,17 @@ export default function MenuDrawer({ open, setOpen }) {
       setOpen(false);
     } else {
       setOpen(true);
+    }
+  };
+
+  const handleAllQuestions = async () => {
+    try {
+      questionContext.fetchAll();
+    } catch (err) {
+      console.error(err);
+    }finally{
+
+      navigate('/home')
     }
   };
 
@@ -102,7 +113,7 @@ export default function MenuDrawer({ open, setOpen }) {
         {authContext.userRole === "user" ? userOptions() : guestOptions()}
         <Divider />
         <ListItem disablePadding>
-          <ListItemButton>
+          <ListItemButton onClick={handleAllQuestions}>
             <ListItemIcon>
               <LiveHelpIcon />
             </ListItemIcon>
@@ -110,7 +121,7 @@ export default function MenuDrawer({ open, setOpen }) {
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton>
+          <ListItemButton onClick={() => navigate("/all-tags")}>
             <ListItemIcon>
               <StyleIcon />
             </ListItemIcon>

@@ -16,6 +16,7 @@ import HomePage from "./components/homePage";
 import QuestionContextProvider from "./components/questionContextProvider";
 import Header from "./components/header";
 import Box from "@mui/material/Box";
+import TagPage from "./components/tagPage";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -28,14 +29,15 @@ function App() {
         <ThemeProvider theme={darkTheme}>
           <Router>
             <Header />
-            <Box sx={{maxHeight:'100%'}}>
-            <Container sx={{ maxWidth: "100%" }}>
-              <Routes>
-                <Route path="/" element={<LoginModal />} />
-                <Route path="/sign-up" element={<SignUpModal />} />
-                <Route path="/home" element={<HomePage />} />
-              </Routes>
-            </Container>
+            <Box sx={{ maxHeight: "100%" }}>
+              <Container sx={{ maxWidth: "100%" }}>
+                <Routes>
+                  <Route path="/" element={<LoginModal />} />
+                  <Route path="/sign-up" element={<SignUpModal />} />
+                  <Route path="/home" element={<HomePage />} />
+                  <Route path="/all-tags" element={<TagPage />} />
+                </Routes>
+              </Container>
             </Box>
           </Router>
         </ThemeProvider>

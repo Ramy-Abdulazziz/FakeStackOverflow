@@ -1,7 +1,8 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import AuthContext from "./authContext";
 import QuestionContext from "./questionContext";
 import axios from "axios";
+import { useNavigate } from "react-router";
 
 export default function QuestionContextProvider({ children }) {
   const [allQuestions, setAllQuestions] = useState([]);
@@ -11,6 +12,10 @@ export default function QuestionContextProvider({ children }) {
   const [searchText, setSearchTerm] = useState("");
   const authContext = useContext(AuthContext);
 
+  useEffect(() => {
+
+    fetchAllQuestions(); 
+  }, [])
   const handleSort = async (params) => {
     try {
       setLoadingQuestions(true);
@@ -107,7 +112,7 @@ export default function QuestionContextProvider({ children }) {
   const handleSearch = async (event, searchQuery) => {
     try {
       if (event.key === "Enter") {
-        let searchQuery = searchText; 
+        let searchQuery = searchText;
         let searchTerm = searchQuery.trim();
 
         if (searchTerm === "") {
@@ -159,6 +164,10 @@ export default function QuestionContextProvider({ children }) {
     }
   };
 
+  const handleTagClick = async (questions) => {
+    setDisplayedQuestions(questions.tagQuestions);
+  };
+
   return (
     <QuestionContext.Provider
       value={{
@@ -170,7 +179,8 @@ export default function QuestionContextProvider({ children }) {
         fetchUser: fetchAllUserQuestions,
         onSort: handleSort,
         onSearch: handleSearch,
-        onInputChange: handleInputChange
+        onInputChange: handleInputChange,
+        handleTagClick: handleTagClick,
       }}
     >
       {children}

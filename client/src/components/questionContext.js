@@ -12,6 +12,7 @@ const QuestionContext = createContext({
   onSearch: () => {},
   onInputChange:()=> {},
   loadingQuestions: false,
+  questionContext: () => {},
 });
 
 export default QuestionContext;
