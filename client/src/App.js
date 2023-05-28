@@ -35,8 +35,8 @@ function App() {
         <ThemeProvider theme={darkTheme}>
           <Router>
             <Header />
-            <Box sx={{ maxHeight: "100%" }}>
-              <Container sx={{ maxWidth: "100%" }}>
+            <Box sx={{ maxHeight: "100%", maxWidth:1800}}>
+              <Container sx={{ maxWidth: 1800}}>
                 <Routes>
                   <Route path="/" element={<LoginModal />} />
                   <Route path="/sign-up" element={<SignUpModal />} />
