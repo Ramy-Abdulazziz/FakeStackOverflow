@@ -9,6 +9,8 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
+import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
+
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -32,6 +34,404 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import FormatDateText from "../dateTextUtils";
 import AuthContext from "./authContext";
+
+function AnswerComments({ answer }) {
+  const [comments, setComments] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [open, setOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const authContext = useContext(AuthContext);
+  const numPerPage = 3;
+
+  const indexOfLastComment = currentPage * numPerPage;
+  const indexOfFirstComment = indexOfLastComment - numPerPage;
+
+  const currentComments = comments.slice(
+    indexOfFirstComment,
+    indexOfLastComment
+  );
+
+  const totalPages = Math.ceil(comments.length / numPerPage);
+
+  const schema = yup.object().shape({
+    comment: yup.string().required(),
+  });
+
+  const { register, handleSubmit, reset } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = async (data) => {
+    if (authContext.reputation > 50) {
+      try {
+        console.log(authContext);
+        const newComment = {
+          text: data.comment,
+          userId: authContext.userId, // replace this with actual user ID
+          parentId: answer._id,
+          parentType: "Answer",
+        };
+
+        console.log(newComment);
+        const response = await axios.post("http://localhost:8000/comment", {
+          text: data.comment,
+          userId: authContext.userId, // replace this with actual user ID
+          parentId: answer._id,
+          parentType: "Answer",
+        });
+
+        // Add the new comment to the state
+        const qComments = await axios.get(
+          `http://localhost:8000/answer/${answer._id}/comments`
+        );
+
+        setComments(qComments.data);
+
+        // Reset the form
+        reset();
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      setErrorMessage(
+        authContext.userRole === "guest"
+          ? "You cant comment as a guest - please log in"
+          : "You need at least 50 reputation points to comment"
+      );
+      reset();
+      setOpen(true);
+    }
+  };
+
+  const handlePageChange = (event, pageNumber) => {
+    if (pageNumber > totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentPage === totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentPage === 1) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+  };
+
+  useEffect(() => {
+    const getAllComments = async () => {
+      try {
+        const qComments = await axios.get(
+          `http://localhost:8000/answer/${answer._id}/comments`
+        );
+
+        setComments(qComments.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    getAllComments();
+  }, []);
+  return (
+    <>
+      <Container sx={{ paddingTop: 2, paddingBottom: 2 }}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Container sx={{ width: "80%" }}>
+            <TextField
+              {...register("comment")}
+              label="new comment"
+              variant="outlined"
+              sx={{
+                width: "100%",
+                borderRadius: 5,
+                "& fieldset": { borderRadius: 8 },
+              }}
+            />
+          </Container>
+          <Box sx={{ display: "flex", justifyContent: "right", mr: 17, mt: 2 }}>
+            <Button variant="contained" type="submit">
+              Add Comment
+            </Button>
+          </Box>
+        </form>
+        {currentComments.map((c) => (
+          <SingleComment key={c._id} comment={c} />
+        ))}
+        <Container sx={{ mt: 1 }}>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            {currentPage === 1 ? (
+              <Button disabled onClick={handlePrev}>
+                <NavigateBeforeIcon />
+              </Button>
+            ) : (
+              <Button onClick={handlePrev}>
+                <NavigateBeforeIcon />
+              </Button>
+            )}
+            <Pagination
+              boundaryCount={2}
+              count={totalPages}
+              hidePrevButton
+              hideNextButton
+              onChange={handlePageChange}
+              page={currentPage}
+              sx={{ width: "100%" }}
+            />
+            <Button onClick={handleNext}>
+              <NavigateNextIcon />
+            </Button>
+          </Box>
+        </Container>
+      </Container>
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={() => setOpen(false)}
+      >
+        <Alert
+          onClose={() => setOpen(false)}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+    </>
+  );
+}
+
+function SingleAnswer({ answer }) {
+  const questionContext = useContext(QuestionContext);
+  const [open, setOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [answr, setAnswer] = useState(answer);
+  const authContext = useContext(AuthContext);
+  const [showComments, setShowComments] = useState(false);
+
+  useEffect(() => {
+    const getAnswerDetails = async () => {
+      try {
+        const ans = await axios.get(
+          `http://localhost:8000/answer/${answer._id}`
+        );
+        console.log(ans);
+        setAnswer(ans.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    getAnswerDetails();
+  }, []);
+
+  const handleShowAComments = async () => {
+    setShowComments(!showComments);
+  };
+
+  const handleUpvote = async () => {
+    if (authContext.reputation >= 50) {
+      try {
+        const updatedAnswer = await axios.put(
+          `http://localhost:8000/answer/${answer._id}/upvote`
+        );
+        // After successfully upvoting, fetch the updated comment data.
+        console.log(updatedAnswer.data);
+        setAnswer(updatedAnswer.data);
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      setErrorMessage(
+        authContext.userRole === "guest"
+          ? "You cant vote as a guest"
+          : "You need at least 50 reputation points to upvote."
+      );
+      setOpen(true);
+    }
+  };
+
+  return (
+    <>
+      <Paper elevation={3} sx={{ borderRadius: 2, minHeight: 100 }}>
+        <Container sx={{ maxWidth: 1800 }}>
+          <Grid
+            container
+            spacing={2}
+            direction={"row"}
+            justifyContent={"space-evenly"}
+          >
+            {" "}
+            <Grid item>
+              <Grid
+                container
+                spacing={2}
+                direction="column"
+                justifyContent={"flex-start"}
+                flexDirection={"column"}
+              >
+                {" "}
+                <Grid item>
+                  <Button onClick={handleUpvote}>
+                    <ThumbUpIcon />
+                  </Button>
+                </Grid>
+                <Grid item sx={{ ml: 3, mb: 0 }}>
+                  <Typography>{answr.upvotes}</Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid
+              item
+              sx={{
+                overflowWrap: "break-word",
+                wordWrap: "break-word",
+              }}
+            >
+              <Container sx={{ minWidth: 300 }}>
+                <Typography variant="body1" sx={{}}>
+                  {answr.text}
+                </Typography>
+              </Container>
+            </Grid>
+            <Grid item>
+              <Card sx={{ minWidth: 230, mb: 2 }}>
+                <CardContent>
+                  <Grid container spacing={2} direction="column">
+                    <Grid item>
+                      <Typography variant="subtitle2">
+                        {FormatDateText.formatDateText(answr.ans_date_time)}
+                      </Typography>
+                    </Grid>
+                    <Grid item>
+                      <Grid container spacing={2} direciton="row">
+                        <Grid item>
+                          <PersonIcon fontSize="medium" />
+                        </Grid>
+                        <Grid item sx={{ mt: 0.5 }}>
+                          <Typography variant="subtitle2">
+                            {answr.ans_by.user_name}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Container>
+      </Paper>
+      <Button
+        onClick={handleShowAComments}
+        sx={{ ml: "auto", mr: "auto", width: "100%" }}
+      >
+        {showComments ? (
+          <ArrowDropUpIcon />
+        ) : (
+          <ArrowDropDownCircleIcon fontSize="large" />
+        )}
+      </Button>
+      {showComments ? <AnswerComments answer={answer} /> : ""}
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={() => setOpen(false)}
+      >
+        <Alert
+          onClose={() => setOpen(false)}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+    </>
+  );
+}
+
+function Answers({ answers }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const numPerPage = 5;
+
+  const indexOfLastAnswer = currentPage * numPerPage;
+  const indexOfFirstAnswer = indexOfLastAnswer - numPerPage;
+
+  const currentAnswers = answers.slice(indexOfFirstAnswer, indexOfLastAnswer);
+
+  const totalPages = Math.ceil(answers.length / numPerPage);
+
+  const handlePageChange = (event, pageNumber) => {
+    if (pageNumber > totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentPage === totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentPage === 1) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+  };
+
+  return (
+    <Box sx={{ height: 600, overflow: "auto" }}>
+      <Paper sx={{ mt: 5, paddingTop: 5, paddingBottom: 5 }}>
+        <Container>
+          {currentAnswers.map((a) => (
+            <SingleAnswer answer={a} />
+          ))}
+        </Container>
+      </Paper>
+
+      <Container sx={{ mt: 1 }}>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          {currentPage === 1 ? (
+            <Button disabled onClick={handlePrev}>
+              <NavigateBeforeIcon />
+            </Button>
+          ) : (
+            <Button onClick={handlePrev}>
+              <NavigateBeforeIcon />
+            </Button>
+          )}
+          <Pagination
+            boundaryCount={2}
+            count={totalPages}
+            hidePrevButton
+            hideNextButton
+            onChange={handlePageChange}
+            page={currentPage}
+            sx={{ width: "100%" }}
+          />
+          <Button onClick={handleNext}>
+            <NavigateNextIcon />
+          </Button>
+        </Box>
+      </Container>
+    </Box>
+  );
+}
 
 function SingleComment({ comment }) {
   const [comm, setComment] = useState(comment);
@@ -343,7 +743,6 @@ function QuestionHeader({ question }) {
   const [votes, setVotes] = useState(question.upvotes);
   const navigate = useNavigate();
 
-  
   const handleTagClick = async (tagName) => {
     try {
       const tagQuestions = await axios.get(
@@ -479,7 +878,11 @@ function QuestionHeader({ question }) {
                       {" "}
                       {question.tags.map((tag, index) => (
                         <Grid item key={index}>
-                          <Button onClick = { ()=> handleTagClick(tag.name)}type="button" variant="contained">
+                          <Button
+                            onClick={() => handleTagClick(tag.name)}
+                            type="button"
+                            variant="contained"
+                          >
                             {" "}
                             {tag.name}
                           </Button>
@@ -528,6 +931,20 @@ function QuestionHeader({ question }) {
                                     variant="h6"
                                   >
                                     {question.views}
+                                  </Typography>
+                                </Grid>
+                              </Grid>
+                            </Grid>
+
+                            <Grid item>
+                              <Grid container spacing={4} direction={"row"}>
+                                <Grid item>
+                                  <QuestionAnswerIcon />
+                                </Grid>
+
+                                <Grid item>
+                                  <Typography variant='h6'>
+                                    {question.answers.length}
                                   </Typography>
                                 </Grid>
                               </Grid>
@@ -619,6 +1036,8 @@ export default function DetailedQuestionPage() {
             </Button>
             {showQComments ? <QuestionComments question={question} /> : ""}
           </Paper>
+
+          <Answers answers={answers} />
         </>
       )}
     </Container>

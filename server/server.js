@@ -93,8 +93,6 @@ app.post("/login", async (req, res) => {
 
     let user = await User.findOne({ user_name: username }).exec();
 
-    console.log(user.user_name);
-
     if (user) {
       let correctPass = await bcrypt.compare(password, user.password);
 
@@ -124,7 +122,11 @@ app.post("/login", async (req, res) => {
           userRole: user.admin ? "admin" : "user",
           reputation: user.reputation,
         });
+      } else {
+        res.send(401).json({ message: "user does not exist" });
       }
+    } else {
+      res.send(401).json({ message: "user does not exist" });
     }
   } catch (err) {
     console.error("error connecting", err);
@@ -188,18 +190,18 @@ app.post("/guest", async (req, res) => {
 app.get("/validate-session", async (req, res) => {
   try {
     if (req.session && req.session.role === ("user" || "admin")) {
-      const id = req.session.userId; 
+      const id = req.session.userId;
       const user = await User.findById(id);
       res.status(200).json({
         isLoggedIn: true,
         userID: req.session.userId,
         userRole: req.session.role,
         user: user,
-        reputation: user.reputation, 
+        reputation: user.reputation,
         admin: user.admin,
-        signup: user.sign_up_date, 
-        userName:user.user_name, 
-        email: user.email
+        signup: user.sign_up_date,
+        userName: user.user_name,
+        email: user.email,
       });
     } else if (req.session && req.session.role === "guest") {
       res.status(200).json({ isLoggedIn: true, userRole: "guest" });
@@ -713,6 +715,70 @@ app.put("/comment/:id/upvote", async (req, res) => {
   }
 });
 
+/**
+ * Routes for answers
+ */
+
+app.get("/answer/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const answer = await Answer.findById(id)
+      .populate("comments")
+      .populate("ans_by")
+      .exec();
+
+    console.log(answer);
+    if (answer) {
+      res.status(200).json(answer);
+    } else {
+      res.status(404).json({ message: "answer not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "System error" });
+  }
+});
+
+app.get("/answer/:id/comments", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const comments = await Comment.find({ parent: { $in: id } })
+      .populate("created_by")
+      .exec();
+
+    res
+      .status(200)
+      .json(comments.sort((a, b) => b.date_created - a.date_created));
+    console.log(comments);
+  } catch (err) {
+    res.status(500).json({ message: "system error" });
+  }
+});
+
+app.put("/answer/:id/upvote", async (req, res) => {
+  try {
+    // Get the comment by id
+    let updatedAnswer = await Answer.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { upvotes: 1 } },
+      { new: true }
+    )
+      .populate("comments")
+      .populate("ans_by")
+      .exec();
+
+    console.log(updatedAnswer);
+    if (!updatedAnswer) {
+      res.status(404).send("Comment not found");
+      return;
+    }
+    // Send a success response
+    res.status(200).json(updatedAnswer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
+  }
+});
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

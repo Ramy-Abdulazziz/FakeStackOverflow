@@ -21,6 +21,7 @@ import QuestionContext from "./questionContext";
 export default function LoginModal({ username }) {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
   const [loginError, setLoginError] = useState(false);
+  const [error, setError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState(false);
   const { handleSubmit, control } = useForm();
   const authContext = useContext(AuthContext);
@@ -29,7 +30,7 @@ export default function LoginModal({ username }) {
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-      if (authContext.isLoggedIn && authContext.userRole !== 'guest') {
+      if (authContext.isLoggedIn && authContext.userRole !== "guest") {
         console.log(authContext);
         navigate("/home");
       }
@@ -41,12 +42,13 @@ export default function LoginModal({ username }) {
     try {
       await axios.post("http://localhost:8000/login", data).then((response) => {
         if (response.status === 200) {
-          console.log(response)
+          console.log(response);
           authContext.onLogin(response.data);
           questionContext.fetchAll();
           setLoginSuccess(true);
           navigate("/home");
-        } else {
+        } else if (response.status === 401) {
+          setError("Username or password incorrect - please try again");
           setLoginError(true);
         }
       });
@@ -60,7 +62,7 @@ export default function LoginModal({ username }) {
     try {
       await axios.post("http://localhost:8000/guest").then((response) => {
         if (response.status === 200) {
-          console.log(response.data)
+          console.log(response.data);
           authContext.onLogin(response.data);
           questionContext.fetchAll();
           navigate("/home");
@@ -193,7 +195,7 @@ export default function LoginModal({ username }) {
 
       <Snackbar open={loginError} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-          Login Failed
+          Username or email incorrect - please try again
         </Alert>
       </Snackbar>
     </ThemeProvider>
