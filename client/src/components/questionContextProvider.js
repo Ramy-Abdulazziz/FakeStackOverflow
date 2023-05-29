@@ -2,7 +2,6 @@ import { useState, useContext, useEffect } from "react";
 import AuthContext from "./authContext";
 import QuestionContext from "./questionContext";
 import axios from "axios";
-import { useNavigate } from "react-router";
 
 export default function QuestionContextProvider({ children }) {
   const [allQuestions, setAllQuestions] = useState([]);

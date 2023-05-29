@@ -14,6 +14,8 @@ import axios from "axios";
 import Link from "@mui/material/Link";
 import QuestionContext from "./questionContext";
 import { useLocation } from "react-router";
+import { useNavigate } from "react-router-dom";
+
 const SearchIconWrapper = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 2),
   height: "100%",
@@ -60,6 +62,7 @@ export default function Header() {
   const questionContext = useContext(QuestionContext);
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   const toggleMenu = (event) => {
     if (menuOpen) {
@@ -96,7 +99,12 @@ export default function Header() {
           {location.pathname !== "/" && location.pathname !== "/sign-up" ? (
             <Search
               onChange={questionContext.onInputChange}
-              onKeyDown={questionContext.onSearch}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  navigate("/home");
+                  questionContext.onSearch(event);
+                }
+              }}
             >
               <SearchIconWrapper>
                 <SearchIcon />

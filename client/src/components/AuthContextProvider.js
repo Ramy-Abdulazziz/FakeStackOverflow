@@ -12,15 +12,19 @@ export default function AuthContextProvider({ children }) {
 
   useEffect(() => {
     const checkSession = async () => {
-      console.log("i am remounting");
+      console.log('resetting user data')
       try {
         const response = await axios.get(
           "http://localhost:8000/validate-session"
         );
         setIsLoggedIn(response.data.isLoggedIn);
         if (response.data.userID) {
+
           setUserId(response.data.userID);
           setUserRole(response.data.userRole);
+          setReputation(response.data.reputation);
+          setUserName(response.data.userName); 
+          
         } else if (response.data.userRole === "guest") {
           setUserId("0");
           setUserName("Guest");
@@ -33,10 +37,6 @@ export default function AuthContextProvider({ children }) {
 
     checkSession();
   }, []);
-
-  useEffect(() => {
-    console.log(reputation);
-  }, [reputation]);
 
   useEffect(() => {
     if (user) {

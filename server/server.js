@@ -188,10 +188,18 @@ app.post("/guest", async (req, res) => {
 app.get("/validate-session", async (req, res) => {
   try {
     if (req.session && req.session.role === ("user" || "admin")) {
+      const id = req.session.userId; 
+      const user = await User.findById(id);
       res.status(200).json({
         isLoggedIn: true,
         userID: req.session.userId,
         userRole: req.session.role,
+        user: user,
+        reputation: user.reputation, 
+        admin: user.admin,
+        signup: user.sign_up_date, 
+        userName:user.user_name, 
+        email: user.email
       });
     } else if (req.session && req.session.role === "guest") {
       res.status(200).json({ isLoggedIn: true, userRole: "guest" });
