@@ -42,12 +42,9 @@ function SingleComment({ comment }) {
   const handleUpvote = async () => {
     if (authContext.reputation >= 50) {
       try {
-        await axios.put(`http://localhost:8000/comment/${comment._id}/upvote`);
+        const updatedComment = await axios.put(`http://localhost:8000/comment/${comment._id}/upvote`);
         // After successfully upvoting, fetch the updated comment data.
-        // Alternatively, you could have the server return the updated comment data, and use that instead.
-        const updatedComment = await axios.get(
-          `http://localhost:8000/comment/${comment._id}`
-        );
+        console.log(updatedComment.data)
         setComment(updatedComment.data);
       } catch (err) {
         console.error(err);
@@ -103,7 +100,7 @@ function SingleComment({ comment }) {
                 wordWrap: "break-word",
               }}
             >
-              <Container>
+              <Container sx={{ minWidth: 300 }}>
                 <Typography variant="body1" sx={{}}>
                   {comment.text}
                 </Typography>
@@ -285,7 +282,7 @@ function QuestionComments({ question }) {
           </Box>
         </form>
         {currentComments.map((c) => (
-          <SingleComment comment={c} />
+          <SingleComment key ={c._id}comment={c} />
         ))}
         <Container sx={{ mt: 1 }}>
           <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -338,7 +335,7 @@ function QuestionHeader({ question }) {
   const [votes, setVotes] = useState(question.upvotes);
 
   const handleUpvote = async () => {
-    console.log(authContext.reputation)
+    console.log(authContext.reputation);
 
     if (authContext.reputation > 50) {
       questionContext.handleUpvote(question);
@@ -359,7 +356,7 @@ function QuestionHeader({ question }) {
   };
 
   const handleDownVote = async () => {
-    console.log(authContext.reputation)
+    console.log(authContext.reputation);
     if (authContext.reputation > 50) {
       questionContext.handleDownvote(question);
 

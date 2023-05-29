@@ -503,7 +503,9 @@ app.get("/question/:id/comments", async (req, res) => {
       .populate("created_by")
       .exec();
 
-    res.status(200).json(comments);
+    res
+      .status(200)
+      .json(comments.sort((a, b) => b.date_created - a.date_created));
     console.log(comments);
   } catch (err) {
     res.status(500).json({ message: "unable to load comments" });
@@ -666,7 +668,7 @@ app.post("/comment", async (req, res) => {
     }
     res.status(200).json({
       message: "Comment added successfully",
-      comment: newComment,
+      comment: newComment.populate("created_by"),
       parent: parent,
     });
   } catch (err) {
@@ -680,11 +682,13 @@ app.put("/comment/:id/upvote", async (req, res) => {
     // Get the comment by id
     let updatedComment = await Comment.findByIdAndUpdate(
       req.params.id,
-      { $inc: { upvote: 1 } },
+      { $inc: { upvotes: 1 } },
       { new: true }
     )
       .populate("created_by")
       .exec();
+
+    console.log(updatedComment);
     if (!updatedComment) {
       res.status(404).send("Comment not found");
       return;
@@ -696,6 +700,7 @@ app.put("/comment/:id/upvote", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
