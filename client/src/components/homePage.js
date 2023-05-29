@@ -19,9 +19,9 @@ export default function HomePage() {
 
   useEffect(() => {
     const getQuestions = async () => {
-      questionContext.fetchAll();
+      // questionContext.fetchAll();
 
-      setCurrentQuestions(questionContext.allQuestions);
+      setCurrentQuestions(questionContext.displayedQuestions);
 
       if (authContext.isLoggedIn) {
         questionContext.fetchUser();
@@ -60,7 +60,7 @@ export default function HomePage() {
   };
 
   return (
-    <Container sx={{ maxHeight:'100%' }}>
+    <Container sx={{ maxHeight: "100%" }}>
       <Typography
         className="numQuestions"
         variant="h3"

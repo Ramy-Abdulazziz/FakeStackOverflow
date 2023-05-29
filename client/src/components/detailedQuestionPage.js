@@ -28,7 +28,7 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material/";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import FormatDateText from "../dateTextUtils";
 import AuthContext from "./authContext";
@@ -341,7 +341,24 @@ function QuestionHeader({ question }) {
   const [errorMessage, setErrorMessage] = useState("");
   const authContext = useContext(AuthContext);
   const [votes, setVotes] = useState(question.upvotes);
+  const navigate = useNavigate();
 
+  
+  const handleTagClick = async (tagName) => {
+    try {
+      const tagQuestions = await axios.get(
+        `http://localhost:8000/questions?tagName=${tagName}`
+      );
+
+      const questions = {
+        tagQuestions: tagQuestions.data,
+      };
+      questionContext.handleTagClick(questions);
+      navigate("/home");
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const handleUpvote = async () => {
     console.log(authContext.reputation);
 
@@ -462,7 +479,7 @@ function QuestionHeader({ question }) {
                       {" "}
                       {question.tags.map((tag, index) => (
                         <Grid item key={index}>
-                          <Button type="button" variant="contained">
+                          <Button onClick = { ()=> handleTagClick(tag.name)}type="button" variant="contained">
                             {" "}
                             {tag.name}
                           </Button>
