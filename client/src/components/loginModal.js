@@ -40,6 +40,7 @@ export default function LoginModal({ username }) {
     try {
       await axios.post("http://localhost:8000/login", data).then((response) => {
         if (response.status === 200) {
+          console.log(response)
           authContext.onLogin(response.data);
           console.log(response.data);
           setLoginSuccess(true);

@@ -122,6 +122,7 @@ app.post("/login", async (req, res) => {
           user_name: user.user_name,
           userID: user._id,
           userRole: user.admin ? "admin" : "user",
+          reputation: user.reputation,
         });
       }
     }
@@ -503,6 +504,7 @@ app.get("/question/:id/comments", async (req, res) => {
       .exec();
 
     res.status(200).json(comments);
+    console.log(comments);
   } catch (err) {
     res.status(500).json({ message: "unable to load comments" });
     console.log(err);
@@ -613,6 +615,87 @@ app.put("/questions/:id/views", async (req, res) => {
   }
 });
 
+/**
+ * Routes for comments
+ */
+
+app.post("/comment", async (req, res) => {
+  try {
+    const commentDetails = req.body;
+    console.log(req.body);
+    let parent;
+    let newComments;
+
+    const user = await User.findById(commentDetails.userId);
+    console.log(user);
+    if (commentDetails.parentType === "Question") {
+      parent = await Question.findById(commentDetails.parentId);
+    }
+
+    if (commentDetails.parentType === "Answer") {
+      parent = await Answer.findById(commentDetails.parentId);
+    }
+
+    console.log(parent._id);
+    console.log(user._id);
+    const newComment = new Comment({
+      text: commentDetails.text,
+      created_by: user._id,
+      parent: parent._id,
+      parentType: commentDetails.parentType,
+    });
+
+    await newComment.save();
+
+    if (commentDetails.parentType === "Question") {
+      parent = await Question.findByIdAndUpdate(
+        commentDetails.parentId,
+        { $push: { comments: newComment._id } },
+        { new: true, useFindAndModify: false }
+      );
+
+      newComments = await Question.fin;
+    }
+
+    if (commentDetails.parentType === "Answer") {
+      parent = await Answer.findByIdAndUpdate(
+        commentDetails.parentId,
+        { $push: { comments: newComment._id } },
+        { new: true, useFindAndModify: false }
+      );
+    }
+    res.status(200).json({
+      message: "Comment added successfully",
+      comment: newComment,
+      parent: parent,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.toString() });
+  }
+});
+
+app.put("/comment/:id/upvote", async (req, res) => {
+  try {
+    // Get the comment by id
+    let updatedComment = await Comment.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { upvote: 1 } },
+      { new: true }
+    )
+      .populate("created_by")
+      .exec();
+    if (!updatedComment) {
+      res.status(404).send("Comment not found");
+      return;
+    }
+    // Send a success response
+    res.status(200).json(updatedComment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
+  }
+});
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

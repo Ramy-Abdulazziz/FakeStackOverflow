@@ -8,15 +8,16 @@ export default function AuthContextProvider({ children }) {
   const [userRole, setUserRole] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [reputation, setReputation] = useState(0);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const checkSession = async () => {
+      console.log("i am remounting");
       try {
         const response = await axios.get(
           "http://localhost:8000/validate-session"
         );
         setIsLoggedIn(response.data.isLoggedIn);
-
         if (response.data.userID) {
           setUserId(response.data.userID);
           setUserRole(response.data.userRole);
@@ -33,19 +34,37 @@ export default function AuthContextProvider({ children }) {
     checkSession();
   }, []);
 
-  const loginHandler = async (data) => {
-    if (data.userRole !== "guest") {
-      setIsLoggedIn(true);
-      setUserName(data.user_name);
-      setUserId(data.userID);
-      setUserRole(data.userRole);
-      setReputation(data.reputation);
+  useEffect(() => {
+    console.log(reputation);
+  }, [reputation]);
+
+  useEffect(() => {
+    if (user) {
+      if (user.userRole !== "guest") {
+        console.log(user);
+        setIsLoggedIn(true);
+        setUserName(user.user_name);
+        setUserId(user.userID);
+        setUserRole(user.userRole);
+        setReputation(user.reputation);
+      } else {
+        setIsLoggedIn(true);
+        setUserName("Guest");
+        setUserId("0");
+        setUserRole("guest");
+      }
     } else {
-      setIsLoggedIn(true);
-      setUserName("Guest");
-      setUserId("0");
-      setUserRole("guest");
+      setIsLoggedIn(false);
+      setUserName("");
+      setUserId("");
+      setUserRole("");
+      setReputation(0);
     }
+  }, [user]);
+
+  const loginHandler = async (data) => {
+    console.log(data);
+    setUser(data);
   };
 
   const logoutHandler = async () => {
@@ -58,6 +77,7 @@ export default function AuthContextProvider({ children }) {
           setUserId("");
           setUserRole("");
           setReputation(0);
+          setUser(null);
         }
       });
     } catch (err) {
@@ -67,19 +87,20 @@ export default function AuthContextProvider({ children }) {
     }
   };
 
-  const contextValue = useMemo(
-    () => ({
-      isLoggedIn: isLoggedIn,
-      userName: userName,
-      userId: userId,
-      userRole: userRole,
-      userReputation: reputation,
-      onLogin: loginHandler,
-      onLogout: logoutHandler,
-    }),
-    [isLoggedIn, userName, userId, userRole, reputation]
-  );
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        isLoggedIn: isLoggedIn,
+        userName: userName,
+        userId: userId,
+        userRole: userRole,
+        reputation: reputation,
+        user: user,
+        onLogin: loginHandler,
+        onLogout: logoutHandler,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 }

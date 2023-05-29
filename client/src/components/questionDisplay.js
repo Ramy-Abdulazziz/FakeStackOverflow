@@ -2,7 +2,7 @@ import Pagination from "@mui/material/Pagination";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
+import { Link } from "react-router-dom";
 import Paper from "@mui/material/Paper";
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
 import ThumbDownAltIcon from "@mui/icons-material/ThumbDownAlt";
@@ -63,8 +63,8 @@ function SingleQuestionContainer({ question }) {
                     wordWrap: "break-word",
                   }}
                 >
-                  <Link href={`/answers/${question._id}`} variant="body2">
-                    {question.title}
+                  <Link to={`/answers/${question._id}`}>
+                    <Typography variant="h6">{question.title}</Typography>
                   </Link>
                 </Grid>
                 <Grid
@@ -173,14 +173,14 @@ export default function QuestionDisplay({ questions, cls }) {
           </Paper>
         </Container>
       </Box>
-      <Container sx={{mt:1}}>
+      <Container sx={{ mt: 1 }}>
         <Pagination
           boundaryCount={2}
           count={totalPages}
           hidePrevButton={currentPage === 1}
           onChange={handlePageChange}
           page={currentPage}
-          sx={{ml:'50%', mr:'50%', minWidth:100}}
+          sx={{ ml: "50%", mr: "50%", minWidth: 100 }}
         />
       </Container>
     </>
