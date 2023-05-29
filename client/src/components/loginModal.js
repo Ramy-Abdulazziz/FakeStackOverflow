@@ -29,7 +29,8 @@ export default function LoginModal({ username }) {
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-      if (authContext.isLoggedIn) {
+      if (authContext.isLoggedIn && authContext.userRole !== 'guest') {
+        console.log(authContext);
         navigate("/home");
       }
     };
@@ -41,8 +42,7 @@ export default function LoginModal({ username }) {
       await axios.post("http://localhost:8000/login", data).then((response) => {
         if (response.status === 200) {
           console.log(response)
-          authContext.onLogin(response.data);
-          console.log(response.data);
+          authContext.onLogin(response);
           setLoginSuccess(true);
           navigate("/home");
         } else {
@@ -59,6 +59,7 @@ export default function LoginModal({ username }) {
     try {
       await axios.post("http://localhost:8000/guest").then((response) => {
         if (response.status === 200) {
+          console.log(response.data)
           authContext.onLogin(response.data);
           questionContext.fetchAll();
           navigate("/home");

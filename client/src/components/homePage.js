@@ -17,19 +17,19 @@ export default function HomePage() {
   const authContext = useContext(AuthContext);
   const [currentQuestions, setCurrentQuestions] = useState([]);
 
-  // useEffect(() => {
-  //   const getQuestions = async () => {
-  //     questionContext.fetchAll();
+  useEffect(() => {
+    const getQuestions = async () => {
+      questionContext.fetchAll();
 
-  //     setCurrentQuestions(questionContext.allQuestions);
+      setCurrentQuestions(questionContext.allQuestions);
 
-  //     if (authContext.isLoggedIn) {
-  //       questionContext.fetchUser();
-  //     }
-  //   };
+      if (authContext.isLoggedIn) {
+        questionContext.fetchUser();
+      }
+    };
 
-  //   getQuestions();
-  // }, []);
+    getQuestions();
+  }, []);
 
   useEffect(() => {
     setCurrentQuestions(questionContext.displayedQuestions);

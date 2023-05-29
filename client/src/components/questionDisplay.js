@@ -4,8 +4,13 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import Paper from "@mui/material/Paper";
+import { Card, CardContent } from "@mui/material";
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
-import ThumbDownAltIcon from "@mui/icons-material/ThumbDownAlt";
+import PersonIcon from "@mui/icons-material/Person";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Container, Grid } from "@mui/material";
 import { useState } from "react";
@@ -16,8 +21,8 @@ function SingleQuestionContainer({ question }) {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Container>
-        <Paper elevation={2} sx={{ mb: 2, mt: 2, borderRadius: 2 }}>
+      <Container sx={{}}>
+        <Paper elevation={4} sx={{ mb: 2, mt: 2, borderRadius: 2 }}>
           <Grid
             container
             spacing={10}
@@ -27,19 +32,6 @@ function SingleQuestionContainer({ question }) {
               mt: 1,
             }}
           >
-            <Grid
-              item
-              sx={{
-                ml: 2,
-              }}
-            >
-              <Typography component="p" color={"grey"}>
-                {question.answers.length} answers
-              </Typography>
-              <Typography component="p" color={"grey"}>
-                {question.views} views
-              </Typography>
-            </Grid>
             <Grid
               item
               sx={{
@@ -99,44 +91,67 @@ function SingleQuestionContainer({ question }) {
               </Grid>
             </Grid>
             <Grid item>
-              <Grid
-                container
-                spacing={5}
-                direction="column"
-                justifyContent="flex-start"
-                alignItems="flex-start"
-              >
-                <Grid item sx={{}}>
-                  <Typography component="p" color={"grey"}>
-                    asked by {question.asked_by.user_name}
-                  </Typography>
-                  <Typography component="p" color={"grey"}>
-                    {FormatDateText.formatDateText(question.ask_date)}
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <Grid
-                    container
-                    direction={"row"}
-                    justifyContent="flex-start"
-                    alignItems="flex-start"
-                  >
+              <Card sx={{ minWidth: 230, mb: 2 }}>
+                <CardContent>
+                  <Grid container spacing={2} direction={"column"}>
                     <Grid item>
-                      <Button>
-                        <ThumbUpAltIcon />
-                        <Typography component="p" color={"grey"} sx={{ ml: 2 }}>
-                          {question.upvotes}
-                        </Typography>
-                      </Button>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <Typography>
+                            {FormatDateText.formatDateText(question.ask_date)}
+                          </Typography>
+                        </Grid>
+                      </Grid>
                     </Grid>
+
                     <Grid item>
-                      <Button>
-                        <ThumbDownAltIcon />
-                      </Button>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <PersonIcon />
+                        </Grid>
+                        <Grid item>
+                          <Typography>{question.asked_by.user_name}</Typography>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+
+                    <Grid item>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <VisibilityIcon />
+                        </Grid>
+                        <Grid item>
+                          <Typography>{question.views}</Typography>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+
+                    <Grid item>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <ThumbUpAltIcon />
+                        </Grid>
+
+                        <Grid item>
+                          <Typography>{question.upvotes}</Typography>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+
+                    <Grid item>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <QuestionAnswerIcon />
+                        </Grid>
+
+                        <Grid item>
+                          <Typography>{question.answers.length}</Typography>
+                        </Grid>
+                      </Grid>
                     </Grid>
                   </Grid>
-                </Grid>
-              </Grid>
+                </CardContent>
+              </Card>
             </Grid>
           </Grid>
         </Paper>
@@ -159,14 +174,36 @@ export default function QuestionDisplay({ questions, cls }) {
   const totalPages = Math.ceil(questions.length / questionsPerPage);
 
   const handlePageChange = (event, pageNumber) => {
-    setCurrentPage(pageNumber);
+    if (pageNumber > totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage(pageNumber);
+    }
   };
 
+  const handleNext = () => {
+    if (currentPage === totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentPage === 1) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+  };
   return (
     <>
-      <Box sx={{ height: 600, overflow: "auto" }}>
+      <Box sx={{ height: 550, overflow: "auto" }}>
         <Container sx={{}}>
-          <Paper elevation={1} variant="outlined" sx={{ borderRadius: 2 }}>
+          <Paper
+            elevation={1}
+            sx={{ borderRadius: 2, paddingTop: 2, paddingBottom: 2 }}
+          >
             {currentQuestions.map((q, index) => (
               <SingleQuestionContainer key={index} question={q} />
             ))}
@@ -174,14 +211,29 @@ export default function QuestionDisplay({ questions, cls }) {
         </Container>
       </Box>
       <Container sx={{ mt: 1 }}>
-        <Pagination
-          boundaryCount={2}
-          count={totalPages}
-          hidePrevButton={currentPage === 1}
-          onChange={handlePageChange}
-          page={currentPage}
-          sx={{ ml: "50%", mr: "50%", minWidth: 100 }}
-        />
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          {currentPage === 1 ? (
+            <Button disabled onClick={handlePrev}>
+              <NavigateBeforeIcon />
+            </Button>
+          ) : (
+            <Button onClick={handlePrev}>
+              <NavigateBeforeIcon />
+            </Button>
+          )}
+          <Pagination
+            boundaryCount={2}
+            count={totalPages}
+            hidePrevButton
+            hideNextButton
+            onChange={handlePageChange}
+            page={currentPage}
+            sx={{ width: "100%" }}
+          />
+          <Button onClick={handleNext}>
+            <NavigateNextIcon />
+          </Button>
+        </Box>
       </Container>
     </>
   );

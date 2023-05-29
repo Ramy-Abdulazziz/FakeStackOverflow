@@ -42,15 +42,21 @@ function SingleComment({ comment }) {
   const handleUpvote = async () => {
     if (authContext.reputation >= 50) {
       try {
-        const updatedComment = await axios.put(`http://localhost:8000/comment/${comment._id}/upvote`);
+        const updatedComment = await axios.put(
+          `http://localhost:8000/comment/${comment._id}/upvote`
+        );
         // After successfully upvoting, fetch the updated comment data.
-        console.log(updatedComment.data)
+        console.log(updatedComment.data);
         setComment(updatedComment.data);
       } catch (err) {
         console.error(err);
       }
     } else {
-      setErrorMessage("You need at least 50 reputation points to upvote.");
+      setErrorMessage(
+        authContext.userRole === "guest"
+          ? "You cant vote as a guest"
+          : "You need at least 50 reputation points to upvote."
+      );
       setOpen(true);
     }
   };
@@ -213,7 +219,9 @@ function QuestionComments({ question }) {
       }
     } else {
       setErrorMessage(
-        "You need at least 50 reputation points to leave a comment"
+        authContext.userRole === "guest"
+          ? "You cant comment as a guest - please log in"
+          : "You need at least 50 reputation points to comment"
       );
       reset();
       setOpen(true);
@@ -282,7 +290,7 @@ function QuestionComments({ question }) {
           </Box>
         </form>
         {currentComments.map((c) => (
-          <SingleComment key ={c._id}comment={c} />
+          <SingleComment key={c._id} comment={c} />
         ))}
         <Container sx={{ mt: 1 }}>
           <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -350,7 +358,11 @@ function QuestionHeader({ question }) {
         console.log(err);
       }
     } else {
-      setErrorMessage("You need at least 50 reputation to vote");
+      setErrorMessage(
+        authContext.userRole === "guest"
+          ? "You cant vote as a guest"
+          : "You need at least 50 reputation points to upvote."
+      );
       setOpen(true);
     }
   };
@@ -370,7 +382,11 @@ function QuestionHeader({ question }) {
         console.log(err);
       }
     } else {
-      setErrorMessage("You need at least 50 reputation to vote");
+      setErrorMessage(
+        authContext.userRole === "guest"
+          ? "You cant vote as a guest"
+          : "You need at least 50 reputation points to downvote."
+      );
       setOpen(true);
     }
   };

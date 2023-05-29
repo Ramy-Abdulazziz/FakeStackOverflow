@@ -168,12 +168,16 @@ app.post("/guest", async (req, res) => {
         }
         req.session.role = "guest";
         console.log("successful guest login on server side");
-        return res.status(200).json({ message: "guest login successful" });
+        return res
+          .status(200)
+          .json({ message: "guest login successful", userRole: "guest" });
       });
     } else {
       req.session.role = "guest";
       console.log("successful guest login on server side");
-      return res.status(200).json({ message: "guest login successful" });
+      return res
+        .status(200)
+        .json({ message: "guest login successful", userRole: "guest" });
     }
   } catch (err) {
     console.log(err);

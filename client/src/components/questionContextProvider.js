@@ -149,13 +149,20 @@ export default function QuestionContextProvider({ children }) {
           })
         );
 
-        let matchingQuestions = new Set([
+        let matchingQuestions = [
           ...tagMatches.flat(),
           ...nonTagMatches.flat(),
           ...linkMatches.flat(),
-        ]);
+        ];
 
-        setDisplayedQuestions(Array.from(matchingQuestions));
+        let uniqueQuestionsMap = new Map();
+
+        matchingQuestions.forEach((q) => {
+          uniqueQuestionsMap.set(q._id, q);
+        });
+
+        let uniqueQuestions = Array.from(uniqueQuestionsMap.values());
+        setDisplayedQuestions(uniqueQuestions);
         event.target.value = "";
         event.target.blur();
       }
