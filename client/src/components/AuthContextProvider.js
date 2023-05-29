@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 import AuthContext from "./authContext";
 import axios from "axios";
+import QuestionContext from "./questionContext";
 export default function AuthContextProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
@@ -9,22 +10,21 @@ export default function AuthContextProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [reputation, setReputation] = useState(0);
   const [user, setUser] = useState(null);
+  const questionContext = useContext(QuestionContext);
 
   useEffect(() => {
     const checkSession = async () => {
-      console.log('resetting user data')
+      console.log("resetting user data");
       try {
         const response = await axios.get(
           "http://localhost:8000/validate-session"
         );
         setIsLoggedIn(response.data.isLoggedIn);
         if (response.data.userID) {
-
           setUserId(response.data.userID);
           setUserRole(response.data.userRole);
           setReputation(response.data.reputation);
-          setUserName(response.data.userName); 
-          
+          setUserName(response.data.userName);
         } else if (response.data.userRole === "guest") {
           setUserId("0");
           setUserName("Guest");
@@ -38,33 +38,22 @@ export default function AuthContextProvider({ children }) {
     checkSession();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      if (user.userRole !== "guest") {
-        console.log(user);
-        setIsLoggedIn(true);
-        setUserName(user.user_name);
-        setUserId(user.userID);
-        setUserRole(user.userRole);
-        setReputation(user.reputation);
-      } else {
-        setIsLoggedIn(true);
-        setUserName("Guest");
-        setUserId("0");
-        setUserRole("guest");
-      }
-    } else {
-      setIsLoggedIn(false);
-      setUserName("");
-      setUserId("");
-      setUserRole("");
-      setReputation(0);
-    }
-  }, [user]);
+
 
   const loginHandler = async (data) => {
-    console.log(data);
-    setUser(data);
+    if (data.userRole !== "guest") {
+      console.log(data);
+      setIsLoggedIn(true);
+      setUserName(data.user_name);
+      setUserId(data.userID);
+      setUserRole(data.userRole);
+      setReputation(data.reputation);
+    } else {
+      setIsLoggedIn(true);
+      setUserName("Guest");
+      setUserId("0");
+      setUserRole("guest");
+    }
   };
 
   const logoutHandler = async () => {

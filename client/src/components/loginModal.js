@@ -42,7 +42,8 @@ export default function LoginModal({ username }) {
       await axios.post("http://localhost:8000/login", data).then((response) => {
         if (response.status === 200) {
           console.log(response)
-          authContext.onLogin(response);
+          authContext.onLogin(response.data);
+          questionContext.fetchAll();
           setLoginSuccess(true);
           navigate("/home");
         } else {
