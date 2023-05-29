@@ -7,6 +7,7 @@ export default function AuthContextProvider({ children }) {
   const [userId, setUserId] = useState("");
   const [userRole, setUserRole] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [reputation, setReputation] = useState(0);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -38,6 +39,7 @@ export default function AuthContextProvider({ children }) {
       setUserName(data.user_name);
       setUserId(data.userID);
       setUserRole(data.userRole);
+      setReputation(data.reputation);
     } else {
       setIsLoggedIn(true);
       setUserName("Guest");
@@ -55,6 +57,7 @@ export default function AuthContextProvider({ children }) {
           setUserName("");
           setUserId("");
           setUserRole("");
+          setReputation(0);
         }
       });
     } catch (err) {
@@ -70,10 +73,11 @@ export default function AuthContextProvider({ children }) {
       userName: userName,
       userId: userId,
       userRole: userRole,
+      userReputation: reputation,
       onLogin: loginHandler,
       onLogout: logoutHandler,
     }),
-    [isLoggedIn, userName, userId, userRole]
+    [isLoggedIn, userName, userId, userRole, reputation]
   );
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

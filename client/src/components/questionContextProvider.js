@@ -10,12 +10,12 @@ export default function QuestionContextProvider({ children }) {
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [displayedQuestions, setDisplayedQuestions] = useState([]);
   const [searchText, setSearchTerm] = useState("");
+  const [detailedQuestion, setDetailedQuestion] = useState(null);
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
-
-    fetchAllQuestions(); 
-  }, [])
+    fetchAllQuestions();
+  }, []);
   const handleSort = async (params) => {
     try {
       setLoadingQuestions(true);
@@ -168,6 +168,48 @@ export default function QuestionContextProvider({ children }) {
     setDisplayedQuestions(questions.tagQuestions);
   };
 
+  const handleUpvote = async (question) => {
+    try {
+      await axios.put(`http://localhost:8000/question/${question._id}/upvote`);
+
+      await axios.put(
+        `http://localhost:8000/user/${question.asked_by._id}/increase/${5}`
+      );
+
+      await fetchAllQuestions();
+      await handleQuestionClick(question._id);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleDownVote = async (question) => {
+    try {
+      await axios.put(
+        `http://localhost:8000/question/${question._id}/downvote`
+      );
+
+      await axios.put(
+        `http://localhost:8000/user/${question.asked_by._id}/decrease/${10}`
+      );
+
+      await fetchAllQuestions();
+      await handleQuestionClick(question._id);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleQuestionClick = async (id) => {
+    try {
+      const question = await axios.get(
+        `http://localhost:8000/questions?id=${id}`
+      );
+      setDetailedQuestion(question);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <QuestionContext.Provider
       value={{
@@ -175,12 +217,16 @@ export default function QuestionContextProvider({ children }) {
         userQuestions: userQuestions,
         displayedQuestions: displayedQuestions,
         loadingQuestions: loadingQuestions,
+        detailedQuestion: detailedQuestion,
         fetchAll: fetchAllQuestions,
         fetchUser: fetchAllUserQuestions,
         onSort: handleSort,
         onSearch: handleSearch,
         onInputChange: handleInputChange,
         handleTagClick: handleTagClick,
+        handleUpvote: handleUpvote,
+        handleDownvote: handleDownVote,
+        handleQuestionClick: handleQuestionClick,
       }}
     >
       {children}

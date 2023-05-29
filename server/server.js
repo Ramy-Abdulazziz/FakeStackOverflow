@@ -46,7 +46,6 @@ const User = require("./models/user");
 const Comment = require("./models/comments");
 const { restart } = require("nodemon");
 
-
 //middleware authentication
 const store = new MongoDBStore({
   uri: mongoDB,
@@ -228,6 +227,52 @@ app.post("/sign-up", async (req, res) => {
     return res
       .status(500)
       .json({ message: "Error adding user - please try again" });
+  }
+});
+
+/**
+ *
+ * Routes for increasing and decreasing user reputation
+ */
+
+app.put("user/:id/increase/:amount/", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const increase = req.params.amount;
+    const updatedUser = User.findByIdAndUpdate(
+      userId,
+      { $inc: { reputation: increase } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      res.send(401).json({ message: "user not found" });
+    }
+    res.send(200).json({ message: "user reputation decreased successfully" });
+  } catch (err) {
+    res.send(500).json({ message: "unable to increase user reputation" });
+    console.error(err);
+  }
+});
+
+app.put("user/:id/decrease/:amount/", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const decrease = req.params.amount;
+    const updatedUser = User.findByIdAndUpdate(
+      userId,
+      { $inc: { reputation: -decrease } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      res.send(401).json({ message: "user not found" });
+    }
+
+    res.send(200).json({ message: "user reputation decreased successfully" });
+  } catch (err) {
+    res.send(500).json({ message: "unable to increase user reputation" });
+    console.error(err);
   }
 });
 //Define routes
@@ -448,6 +493,22 @@ app.get("/questions/:id/answers", async (req, res) => {
   }
 });
 
+app.get("/question/:id/comments", async (req, res) => {
+  console.log("received request for comments");
+
+  try {
+    const id = req.params.id;
+    const comments = await Comment.find({ parent: { $in: id } })
+      .populate("created_by")
+      .exec();
+
+    res.status(200).json(comments);
+  } catch (err) {
+    res.status(500).json({ message: "unable to load comments" });
+    console.log(err);
+  }
+});
+
 app.get("/tags", async (req, res) => {
   try {
     const tags = await Tag.find().exec();
@@ -457,7 +518,6 @@ app.get("/tags", async (req, res) => {
   }
 });
 
-
 app.get("/tags/:id/name", async (req, res) => {
   console.log("Received request for tagNames");
   try {
@@ -466,7 +526,6 @@ app.get("/tags/:id/name", async (req, res) => {
     const tagId = req.params.id;
     console.log(tagId);
     const tag = await Tag.findById(tagId);
-
 
     if (!tag) {
       return res.status(404).json({ message: "Tag not found" });
@@ -487,8 +546,56 @@ app.get("/answer", async (req, res) => {
   }
 });
 
+/**
+ 
+Routes for Question changes
+ */
+
+app.put("/question/:id/upvote", async (req, res) => {
+  try {
+    console.log("updating ");
+
+    const questionId = req.params.id;
+    const updatedQuestion = await Question.findByIdAndUpdate(
+      questionId,
+      { $inc: { upvotes: 1 } },
+      { new: true }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+    res.status(200).json(updatedQuestion);
+  } catch (err) {
+    res.send(500).json({ message: "Error upvoting - try again" });
+    console.error(err);
+  }
+});
+
+app.put("/question/:id/downvote", async (req, res) => {
+  try {
+    console.log("updating ");
+
+    const questionId = req.params.id;
+    const updatedQuestion = await Question.findByIdAndUpdate(
+      questionId,
+      { $inc: { upvotes: -1 } },
+      { new: true }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+    res.status(200).json(updatedQuestion);
+  } catch (err) {
+    res.status(500).json({ message: "Error upvoting - try again" });
+    console.error(err);
+  }
+});
+
 app.put("/questions/:id/views", async (req, res) => {
   try {
+    console.log("updating ");
     const questionId = req.params.id;
     const updatedQuestion = await Question.findByIdAndUpdate(
       questionId,
