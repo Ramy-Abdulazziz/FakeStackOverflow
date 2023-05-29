@@ -4,6 +4,11 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import PersonIcon from "@mui/icons-material/Person";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import ArrowDropDownCircleIcon from "@mui/icons-material/ArrowDropDownCircle";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 
 import {
   Box,
@@ -15,6 +20,9 @@ import {
   Button,
   Card,
   CardContent,
+  TextField,
+  Pagination,
+  PaginationItem,
 } from "@mui/material/";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -23,67 +31,75 @@ import AuthContext from "./authContext";
 
 function SingleComment({ comment }) {
   return (
-    <Paper elevation={2} sx={{ mb: 2, mt: 10, borderRadius: 2 }}>
-      <Container sx={{mb:5, mt:5}}>
-        <Grid container spacing = {5}direction={"row"} justifyContent={"space-evenly"}>
-          <Grid item>
-
+    <Paper
+      elevation={2}
+      sx={{
+        mr: "auto",
+        ml: "auto",
+        mt: 5,
+        mb: 2,
+        borderRadius: 2,
+        maxWidth: 800,
+      }}
+    >
+      <Grid
+        container
+        spacing={2}
+        direction={"row"}
+        justifyContent={"space-evenly"}
+      >
+        <Grid item>
           <Grid
-              container
-              spacing={5}
-              direction="column"
-              justifyContent={"flex-start"}
-              flexDirection={"column"}
-            >
-              <Grid item>
-                <Button>
-                  <KeyboardArrowUpIcon fontSize="medium" />
-                </Button>
-              </Grid>
-              <Grid item sx={{ ml: 2, mb:0,  }}>
-                <Typography variant="h5">{comment.upvotes}</Typography>
-              </Grid>
-              <Grid item>
-                <Button>
-                  <KeyboardArrowDownIcon fontSize="medium" />
-                </Button>
-              </Grid>
+            container
+            spacing={2}
+            direction="column"
+            justifyContent={"flex-start"}
+            flexDirection={"column"}
+          >
+            <Grid item>
+              <Button>
+                <ThumbUpIcon fontSize="small" />
+              </Button>
             </Grid>
-
-          </Grid>
-          
-          <Grid item >
-            <Grid
-                item
-                sx={{
-                  overflowWrap: "break-word",
-                  wordWrap: "break-word",
-                }}
-              >
-                <Container>
-                  <Typography variant="h5" sx={{}}>{comment.text}</Typography>
-                </Container>
+            <Grid item sx={{ ml: 3, mb: 0 }}>
+              <Typography variant="body2">{comment.upvotes}</Typography>
             </Grid>
           </Grid>
-          
-          <Grid item>
+        </Grid>
 
+        <Grid item>
+          <Grid
+            item
+            sx={{
+              overflowWrap: "break-word",
+              wordWrap: "break-word",
+            }}
+          >
+            <Container>
+              <Typography variant="body1" sx={{}}>
+                {comment.text}
+              </Typography>
+            </Container>
+          </Grid>
+        </Grid>
+
+        <Grid item>
           <Grid item>
-            <Card sx={{minWidth:300}}>
+            <Card sx={{ minWidth: 230, mb: 2 }}>
               <CardContent>
                 <Grid container spacing={2} direction="column">
                   <Grid item>
-                    <Typography variant="h6">
+                    <Typography variant="subtitle2">
                       {FormatDateText.formatDateText(comment.date_created)}
                     </Typography>
                   </Grid>
                   <Grid item>
                     <Grid container spacing={2} direciton="row">
                       <Grid item>
-                        <PersonIcon fontSize="large" />
+                        <PersonIcon fontSize="medium" />
                       </Grid>
-                      <Grid item sx={{ mt: 0.7 }}>
-                        <Typography variant="h6">
+                      <Grid item sx={{ mt: 0.5 }}>
+                        <Typography variant="subtitle2">
                           {comment.created_by.user_name}
                         </Typography>
                       </Grid>
@@ -93,16 +109,50 @@ function SingleComment({ comment }) {
               </CardContent>
             </Card>
           </Grid>
-          </Grid>
-
         </Grid>
-      </Container>
+      </Grid>
     </Paper>
   );
 }
 
 function QuestionComments({ question }) {
   const [comments, setComments] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const numPerPage = 3;
+
+  const indexOfLastComment = currentPage * numPerPage;
+  const indexOfFirstComment = indexOfLastComment - numPerPage;
+
+  const currentComments = comments.slice(
+    indexOfFirstComment,
+    indexOfLastComment
+  );
+
+  const totalPages = Math.ceil(comments.length / numPerPage);
+
+  const handlePageChange = (event, pageNumber) => {
+    if (pageNumber > totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentPage === totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentPage === 1) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+  };
 
   useEffect(() => {
     const getAllComments = async () => {
@@ -120,13 +170,47 @@ function QuestionComments({ question }) {
     getAllComments();
   }, []);
   return (
-    <Paper elevation={3} sx={{ borderRadius: 2, mt: 5, minHeight: 300 }}>
-      <Container>
-        {comments.map((c) => (
-          <SingleComment comment={c} />
-        ))}
+    <Container sx={{ paddingTop: 2, paddingBottom: 2 }}>
+      <Container sx={{ width: "80%" }}>
+        <TextField
+          label="new comment"
+          variant="outlined"
+          sx={{
+            width: "100%",
+            borderRadius: 5,
+            "& fieldset": { borderRadius: 8 },
+          }}
+        />
       </Container>
-    </Paper>
+      {currentComments.map((c) => (
+        <SingleComment comment={c} />
+      ))}
+      <Container sx={{ mt: 1 }}>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          {currentPage === 1 ? (
+            <Button disabled onClick={handlePrev}>
+              <NavigateBeforeIcon />
+            </Button>
+          ) : (
+            <Button onClick={handlePrev}>
+              <NavigateBeforeIcon />
+            </Button>
+          )}
+          <Pagination
+            boundaryCount={2}
+            count={totalPages}
+            hidePrevButton
+            hideNextButton
+            onChange={handlePageChange}
+            page={currentPage}
+            sx={{ width: "100%" }}
+          />
+          <Button onClick={handleNext}>
+            <NavigateNextIcon />
+          </Button>
+        </Box>
+      </Container>
+    </Container>
   );
 }
 
@@ -309,9 +393,13 @@ export default function DetailedQuestionPage() {
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showQComments, setShowQComments] = useState(false);
 
   const { id } = useParams();
 
+  const handleShowQComments = async () => {
+    setShowQComments(!showQComments);
+  };
   useEffect(() => {
     const getQuestionDetails = async () => {
       try {
@@ -339,8 +427,20 @@ export default function DetailedQuestionPage() {
         <Skeleton variant="box">{/* <QuestionDetail /> */}</Skeleton>
       ) : (
         <>
-          <QuestionDetail question={question} />
-          <QuestionComments question={question} />
+          <Paper>
+            <QuestionDetail question={question} />
+            <Button
+              onClick={handleShowQComments}
+              sx={{ ml: "auto", mr: "auto", width: "100%" }}
+            >
+              {showQComments ? (
+                <ArrowDropUpIcon />
+              ) : (
+                <ArrowDropDownCircleIcon fontSize="large" />
+              )}
+            </Button>
+            {showQComments ? <QuestionComments question={question} /> : ""}
+          </Paper>
         </>
       )}
     </Container>
