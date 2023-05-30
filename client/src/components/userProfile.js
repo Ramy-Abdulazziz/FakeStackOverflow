@@ -192,6 +192,7 @@ function UserHeader() {
 export default function UserProfile() {
   const authContext = useContext(AuthContext);
   const questionContext = useContext(QuestionContext);
+  const [loading, setLoading] = useState(false);
 
   return authContext.user === null ? (
     <Skeleton variant="square">

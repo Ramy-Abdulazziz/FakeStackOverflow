@@ -10,6 +10,7 @@ export default function QuestionContextProvider({ children }) {
   const [displayedQuestions, setDisplayedQuestions] = useState([]);
   const [searchText, setSearchTerm] = useState("");
   const [detailedQuestion, setDetailedQuestion] = useState(null);
+  const [userAnswered, setUserAnswered] = useState([]);
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
@@ -61,6 +62,16 @@ export default function QuestionContextProvider({ children }) {
           (a, b) => new Date(b.ask_date) - new Date(a.ask_date)
         )
       );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
+  const fetchAllUserAnsweredQuestions = async () => {
+    try {
+      setLoadingQuestions(true);
     } catch (err) {
       console.error(err);
     } finally {
