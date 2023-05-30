@@ -10,6 +10,7 @@ export default function AuthContextProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [reputation, setReputation] = useState(0);
   const [user, setUser] = useState(null);
+  const [signUp, setSignUp] = useState(new Date());
   const questionContext = useContext(QuestionContext);
 
   useEffect(() => {
@@ -25,6 +26,9 @@ export default function AuthContextProvider({ children }) {
           setUserRole(response.data.userRole);
           setReputation(response.data.reputation);
           setUserName(response.data.userName);
+          setSignUp(response.data.signup);
+          setUser(response.data.user);
+
         } else if (response.data.userRole === "guest") {
           setUserId("0");
           setUserName("Guest");
@@ -32,13 +36,12 @@ export default function AuthContextProvider({ children }) {
         }
       } catch (err) {
         console.log("error fetching validation info", err);
+      } finally {
       }
     };
 
     checkSession();
   }, []);
-
-
 
   const loginHandler = async (data) => {
     if (data.userRole !== "guest") {
@@ -48,6 +51,7 @@ export default function AuthContextProvider({ children }) {
       setUserId(data.userID);
       setUserRole(data.userRole);
       setReputation(data.reputation);
+      setUser(data.user)
     } else {
       setIsLoggedIn(true);
       setUserName("Guest");
@@ -85,6 +89,7 @@ export default function AuthContextProvider({ children }) {
         userRole: userRole,
         reputation: reputation,
         user: user,
+        signUp: signUp,
         onLogin: loginHandler,
         onLogout: logoutHandler,
       }}

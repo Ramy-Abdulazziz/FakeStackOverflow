@@ -60,10 +60,16 @@ export default function MenuDrawer({ open, setOpen }) {
     }
   };
 
+  const navigateUserProfile = async () => {
+
+    const userId = authContext.userId;
+    navigate(`/user/${userId}`)
+  }
+
   const userOptions = () => (
     <List>
       <ListItem disablePadding>
-        <ListItemButton>
+        <ListItemButton onClick={navigateUserProfile}>
           <ListItemIcon>
             <AccountCircleIcon />
           </ListItemIcon>

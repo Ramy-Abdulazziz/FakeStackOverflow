@@ -6,6 +6,7 @@ const AuthContext = createContext({
   userId: null,
   userRole: null,
   allQuestions: [],
+  signUp: null,
   onLogin: () => {},
   onLogout: () => {},
   isLoading: false,

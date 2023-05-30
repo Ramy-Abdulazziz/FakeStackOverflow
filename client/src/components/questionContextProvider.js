@@ -51,9 +51,11 @@ export default function QuestionContextProvider({ children }) {
   const fetchAllUserQuestions = async () => {
     try {
       setLoadingQuestions(true);
+      console.log(authContext.userId);
       const response = await axios.get(
-        `http://localhost:8000/questions/user/${authContext.userId}`
+        `http://localhost:8000/questions/user/${authContext.user._id}`
       );
+      console.log(response);
       setUserQuestions(
         response.data.sort(
           (a, b) => new Date(b.ask_date) - new Date(a.ask_date)

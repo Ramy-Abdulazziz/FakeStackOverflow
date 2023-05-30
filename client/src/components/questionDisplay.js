@@ -184,7 +184,7 @@ function SingleQuestionContainer({ question }) {
   );
 }
 
-export default function QuestionDisplay({ questions, cls }) {
+export default function QuestionDisplay({ questions }) {
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 5;
 

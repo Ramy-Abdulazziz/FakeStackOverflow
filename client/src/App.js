@@ -23,6 +23,7 @@ import Header from "./components/header";
 import Box from "@mui/material/Box";
 import TagPage from "./components/tagPage";
 import DetailedQuestionPage from "./components/detailedQuestionPage";
+import UserProfile from "./components/userProfile";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -35,8 +36,8 @@ function App() {
         <ThemeProvider theme={darkTheme}>
           <Router>
             <Header />
-            <Box sx={{ maxHeight: "100%", maxWidth:1800}}>
-              <Container sx={{ maxWidth: 1800}}>
+            <Box sx={{ maxHeight: "100%", maxWidth: 1800 }}>
+              <Container sx={{ maxWidth: 1800 }}>
                 <Routes>
                   <Route path="/" element={<LoginModal />} />
                   <Route path="/sign-up" element={<SignUpModal />} />
@@ -46,6 +47,7 @@ function App() {
                     path="/answers/:id"
                     element={<DetailedQuestionPage />}
                   />
+                  <Route path="/user/:id" element={<UserProfile />} />
                 </Routes>
               </Container>
             </Box>

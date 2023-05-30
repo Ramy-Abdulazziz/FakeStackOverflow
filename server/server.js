@@ -121,6 +121,7 @@ app.post("/login", async (req, res) => {
           userID: user._id,
           userRole: user.admin ? "admin" : "user",
           reputation: user.reputation,
+          user: user,
         });
       } else {
         res.send(401).json({ message: "user does not exist" });
@@ -350,11 +351,13 @@ app.get("/questions/user/:id", async (req, res) => {
 
   try {
     const user_id = req.params.id;
-    const userQuestions = await Question.find({ user_id: user_id });
-
-    res
-      .status(200)
-      .json({ message: "found all user questions - sending questions" });
+    const userQuestions = await Question.find({ asked_by: user_id })
+      .populate("tags")
+      .populate("asked_by")
+      .exec();
+    console.log(user_id);
+    console.log(userQuestions);
+    res.status(200).json(userQuestions);
   } catch (err) {
     console.error(err);
     res.status(400).json({ message: "failed to retrieve user questions" });
