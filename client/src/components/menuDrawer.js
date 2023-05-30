@@ -135,6 +135,26 @@ export default function MenuDrawer({ open, setOpen }) {
     </List>
   );
 
+  const allOptions = () => (
+    <List>
+      <ListItem disablePadding>
+        <ListItemButton onClick={handleAllQuestions}>
+          <ListItemIcon>
+            <LiveHelpIcon />
+          </ListItemIcon>
+          <ListItemText primary={"All Questions"} />
+        </ListItemButton>
+      </ListItem>
+      <ListItem disablePadding>
+        <ListItemButton onClick={() => navigate("/all-tags")}>
+          <ListItemIcon>
+            <StyleIcon />
+          </ListItemIcon>
+          <ListItemText primary={"All Tags"} />
+        </ListItemButton>
+      </ListItem>
+    </List>
+  );
   const list = () => (
     <Box
       sx={{ width: "auto" }}
@@ -144,7 +164,7 @@ export default function MenuDrawer({ open, setOpen }) {
     >
       <List>
         <ListItem disablePadding>
-          <ListItemButton >
+          <ListItemButton>
             <ListItemIcon>
               <ArrowBackIosNewIcon />
             </ListItemIcon>
@@ -152,22 +172,7 @@ export default function MenuDrawer({ open, setOpen }) {
         </ListItem>
         {authContext.userRole === "user" ? userOptions() : guestOptions()}
         <Divider />
-        <ListItem disablePadding>
-          <ListItemButton onClick={handleAllQuestions}>
-            <ListItemIcon>
-              <LiveHelpIcon />
-            </ListItemIcon>
-            <ListItemText primary={"All Questions"} />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate("/all-tags")}>
-            <ListItemIcon>
-              <StyleIcon />
-            </ListItemIcon>
-            <ListItemText primary={"All Tags"} />
-          </ListItemButton>
-        </ListItem>
+        {authContext.isLoggedIn === true ? allOptions() : null}
       </List>
     </Box>
   );
