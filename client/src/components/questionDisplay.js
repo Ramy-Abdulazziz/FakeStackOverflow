@@ -75,7 +75,7 @@ function SingleQuestionContainer({ question }) {
                     wordWrap: "break-word",
                   }}
                 >
-                  <Link to={`/answers/${question._id}`}>
+                  <Link onClick={() => questionContext.handleQuestionClick(question._id)} to={`/answers/${question._id}`}>
                     <Typography variant="h6">{question.title}</Typography>
                   </Link>
                 </Grid>

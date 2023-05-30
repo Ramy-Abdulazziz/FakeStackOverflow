@@ -697,7 +697,7 @@ app.put("/question/:id/downvote", async (req, res) => {
 
 app.put("/questions/:id/views", async (req, res) => {
   try {
-    console.log("updating ");
+    console.log("received request to inc question view ");
     const questionId = req.params.id;
     const updatedQuestion = await Question.findByIdAndUpdate(
       questionId,

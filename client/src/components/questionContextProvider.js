@@ -184,7 +184,11 @@ export default function QuestionContextProvider({ children }) {
   };
 
   const handleTagClick = async (questions) => {
-    setDisplayedQuestions(questions.tagQuestions);
+    setDisplayedQuestions(
+      questions.tagQuestions.sort(
+        (a, b) => new Date(b.ask_date) - new Date(a.ask_date)
+      )
+    );
   };
 
   const handleUpvote = async (question) => {
@@ -221,10 +225,13 @@ export default function QuestionContextProvider({ children }) {
 
   const handleQuestionClick = async (id) => {
     try {
+      await axios.put(`http://localhost:8000/questions/${id}/views`);
       const question = await axios.get(
         `http://localhost:8000/questions?id=${id}`
       );
       setDetailedQuestion(question);
+      fetchAllQuestions();
+      fetchAllUserQuestions();
     } catch (err) {
       console.error(err);
     }
@@ -237,8 +244,8 @@ export default function QuestionContextProvider({ children }) {
       .post(url, data)
       .then((response) => {
         console.log(response);
-        fetchAllQuestions(); 
-        fetchAllUserQuestions(); 
+        fetchAllQuestions();
+        fetchAllUserQuestions();
       })
       .catch((error) => {
         console.log(error);
