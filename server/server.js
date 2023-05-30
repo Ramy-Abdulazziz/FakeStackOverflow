@@ -292,25 +292,48 @@ app.put("user/:id/decrease/:amount/", async (req, res) => {
   }
 });
 //Define routes
-app.put("/submit/question", async (req, res) => {
+app.post("/submit/question", async (req, res) => {
   console.log("receiving new question");
   try {
     const questionData = req.body;
-    const tagsPromises = questionData.tags.map(async (tagName) => {
-      const tag = await Tag.findOne({ name: tagName });
-      if (tag) {
-        return tag;
-      } else {
-        const newTag = new Tag({ name: tagName });
-        await newTag.save();
-        return newTag;
+    const user = await User.findById(questionData.user);
+    const existingTagsPromises = questionData.existingTags.map(
+      async (tagName) => {
+        const tag = await Tag.findOneAndUpdate(
+          { name: tagName },
+          { $push: { used_by: user._id } },
+          { new: true, useFindAndModify: false }
+        );
+        return tag; // return the tag here
       }
+    );
+    const existingTags = await Promise.all(existingTagsPromises);
+
+    const newTagsPromises = questionData.newTags.map(async (tagName) => {
+      const tagDetails = {
+        name: tagName,
+        created_by: user._id,
+        used_by: [user._id],
+      };
+
+      const newTag = new Tag(tagDetails);
+      await newTag.save();
+      return newTag; // return the new tag here
     });
-    const tags = await Promise.all(tagsPromises);
 
-    questionData.tags = tags.map((tag) => tag._id);
+    const newTags = await Promise.all(newTagsPromises);
 
-    const newQuestion = new Question(questionData);
+    // Create an array of tag IDs
+    const tagIds = [...existingTags, ...newTags].map((tag) => tag._id);
+
+    const newQuestionDetails = {
+      title: questionData.title,
+      text: questionData.text,
+      summary: questionData.summary,
+      tags: tagIds,
+      asked_by: user._id,
+    };
+    const newQuestion = new Question(newQuestionDetails);
     await newQuestion.save();
     res
       .status(201)
@@ -364,6 +387,45 @@ app.get("/questions/user/:id", async (req, res) => {
   }
 });
 
+app.get("/questions/answered/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    console.log(userId);
+    const user = await User.findById(userId)
+      .populate({
+        path: "answers",
+        populate: {
+          path: "question",
+          model: "Question",
+          populate: [
+            { path: "answers", model: "Answer" },
+            { path: "tags", model: "Tag" },
+            { path: "asked_by", model: "User" },
+          ],
+        },
+      })
+      .exec();
+    const questions = user.answers.map((answer) => answer.question);
+    questions.forEach((question) => {
+      // Sort the answers array so that the user's answer is first and the rest are sorted by date
+      question.answers.sort((a, b) => {
+        if (a.ans_by.toString() === userId) {
+          return -1;
+        } else if (b.ans_by.toString() === userId) {
+          return 1;
+        } else {
+          return b.ans_date_time - a.ans_date_time; // descending order by date
+        }
+      });
+    });
+
+    console.log(questions);
+    res.status(200).json(questions);
+  } catch (err) {
+    console.log(err);
+    res.status(500);
+  }
+});
 app.get("/questions", async (req, res) => {
   console.log("Received request for questions");
   console.log(req.sort);
@@ -535,7 +597,7 @@ app.get("/tags", async (req, res) => {
     const tags = await Tag.find().exec();
     res.json(tags);
   } catch (err) {
-    res.status(500).send("Error retrieving questions");
+    res.status(500).send("Error retrieving tags");
   }
 });
 
@@ -564,6 +626,25 @@ app.get("/answer", async (req, res) => {
     res.json(questions);
   } catch (err) {
     res.status(500).send("Error retrieving questions");
+  }
+});
+
+/**
+ *
+ * Routes for
+ */
+
+app.get("/user/tags/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const tags = await Tag.find({ created_by: { $in: userId } })
+      .populate("created_by")
+      .populate("used_by")
+      .exec();
+
+    res.status(200).json(tags);
+  } catch (err) {
+    res.status(500).json({ message: "system error" });
   }
 });
 

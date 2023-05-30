@@ -97,12 +97,20 @@ async function commentCreate(text, created_by, parent, parent_type, upvotes) {
   const comment = new Comment(commentDetails);
   return comment.save();
 }
-async function answerCreate(text, ans_by, comments, ans_date_time, upvotes) {
+async function answerCreate(
+  text,
+  ans_by,
+  comments,
+  ans_date_time,
+  upvotes,
+  question
+) {
   const answerdetail = {
     text: text,
     ans_by: ans_by,
     comments: comments,
     upvotes: upvotes,
+    question: question,
   };
   if (ans_by != false) answerdetail.ans_by = ans_by;
   if (ans_date_time != false) answerdetail.ans_date_time = ans_date_time;
@@ -196,8 +204,8 @@ const populate = async () => {
     5
   );
 
-  const ans1 = await answerCreate("Answer 1", u1._id, [], false, 10);
-  const ans2 = await answerCreate("Answer 2", u2._id, [], false, 5);
+  const ans1 = await answerCreate("Answer 1", u1._id, [], false, 10, q1._id);
+  const ans2 = await answerCreate("Answer 2", u2._id, [], false, 5, q2._id);
 
   q2.answers.push(ans2);
   q1.answers.push(ans1);
@@ -294,8 +302,6 @@ const populate = async () => {
   await comment5.save();
   await comment6.save();
 
-
-
   ans1.comments.push(comment1._id);
   q2.comments.push(comment2._id);
 
@@ -307,13 +313,12 @@ const populate = async () => {
   await ans1.save();
   await q2.save();
 
-  console.log('done')
+  console.log("done");
 };
 
-populate()
-  .catch((err) => {
-    console.log('ERROR: ' + err);
-    if(db) db.close();
-  });
+populate().catch((err) => {
+  console.log("ERROR: " + err);
+  if (db) db.close();
+});
 
-console.log('processing ...');
+console.log("processing ...");

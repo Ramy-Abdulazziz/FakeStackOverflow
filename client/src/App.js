@@ -12,7 +12,6 @@ import {
 } from "react-router-dom";
 import LoginModal from "./components/loginModal";
 import { Container } from "@mui/material";
-import MockQuestions from "./components/mockQuestions";
 import QuestionDisplay from "./components/questionDisplay";
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
@@ -24,6 +23,9 @@ import Box from "@mui/material/Box";
 import TagPage from "./components/tagPage";
 import DetailedQuestionPage from "./components/detailedQuestionPage";
 import UserProfile from "./components/userProfile";
+import UserAnsweredPage from "./components/userAnswersPage";
+import UserTagsPage from "./components/userTagsPage";
+import AddQuestionForm from "./components/addQuestionForm";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -48,6 +50,12 @@ function App() {
                     element={<DetailedQuestionPage />}
                   />
                   <Route path="/user/:id" element={<UserProfile />} />
+                  <Route
+                    path="/user/:id/questions"
+                    element={<UserAnsweredPage />}
+                  />
+                  <Route path="/user/:id/tags" element={<UserTagsPage />} />
+                  <Route path="/question/add" element={<AddQuestionForm />} />
                 </Routes>
               </Container>
             </Box>

@@ -7,7 +7,7 @@ const QuestionContext = createContext({
   detailedQuestion: [],
   fetchAll: () => {},
   fetchUser: () => {},
-  //   onAdd: () => {},
+  handleAdd: () => {},
   //   onDelete: () => {},
   onSort: () => {},
   onSearch: () => {},

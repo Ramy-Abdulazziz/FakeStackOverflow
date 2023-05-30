@@ -6,6 +6,7 @@ var AnswerSchema = new Schema({
   ans_by: { type: Schema.Types.ObjectId, ref: "User" },
   comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
   ans_date_time: { type: Date, default: getRandomDate },
+  question: { type: Schema.Types.ObjectId, ref: "Question", required: true },
   upvotes: { type: Number, default: 0 },
 });
 

@@ -10,6 +10,7 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
+import Fab from '@mui/material/Fab';
 
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -811,7 +812,7 @@ function QuestionHeader({ question }) {
     <>
       <Paper elevation={3} sx={{ borderRadius: 2, minHeight: 300 }}>
         <Container sx={{ maxWidth: 1800 }}>
-          <Grid container justifyContent={"left"} spacing={2} direction={"row"}>
+          <Grid container justifyContent={"left"} spacing={2} direction={"row"} sx={{minWidth:1300}}>
             <Grid item sx={{ maxwidth: 10 }}>
               <Grid
                 container
@@ -836,7 +837,7 @@ function QuestionHeader({ question }) {
               </Grid>
             </Grid>
 
-            <Grid item sx={{ maxWidth: 900 }}>
+            <Grid item sx={{ width: 900 }}>
               <Grid
                 container
                 spacing={5}
