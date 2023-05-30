@@ -9,6 +9,7 @@ import LiveHelpIcon from "@mui/icons-material/LiveHelp";
 import StyleIcon from "@mui/icons-material/Style";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
+import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { Divider } from "@mui/material";
@@ -102,7 +103,6 @@ export default function MenuDrawer({ open, setOpen }) {
           <ListItemText primary={"My Tags"} />
         </ListItemButton>
       </ListItem>
-
       <ListItem disablePadding>
         <ListItemButton onClick={handleLogout}>
           <ListItemIcon>
@@ -127,11 +127,23 @@ export default function MenuDrawer({ open, setOpen }) {
       <ListItem disablePadding>
         <ListItemButton onClick={() => navigate("/")}>
           <ListItemIcon>
-            <LogoutIcon />
+            <LoginIcon />
           </ListItemIcon>
           <ListItemText primary={"Log In"} />
         </ListItemButton>
       </ListItem>
+      {authContext.isLoggedIn ? (
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText primary={"End Guest Session"} />
+          </ListItemButton>
+        </ListItem>
+      ) : (
+        null
+      )}
     </List>
   );
 
