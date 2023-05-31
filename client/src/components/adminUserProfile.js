@@ -27,6 +27,7 @@ import TableRow from "@mui/material/TableRow";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AdminContext from "./adminContext";
+import axios from "axios";
 
 function UserQuestions() {
   const questionContext = useContext(QuestionContext);
@@ -36,13 +37,20 @@ function UserQuestions() {
 
   useEffect(() => {
     const getUserQuestion = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/questions/user/${adminContext.handlingUserID}`
+        );
+        setUserQuestions(response.data);
+        setOpen(userQuestions.length === 0);
+      } catch (err) {
+        console.error(err);
+      }
       adminContext.fetchUser();
-      setUserQuestions(adminContext.userQuestions);
-      setOpen(questionContext.userQuestions.length === 0);
     };
 
     getUserQuestion();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminContext.loadingQuestions]);
   return (
     <>
@@ -58,7 +66,7 @@ function UserQuestions() {
           {userQuestions.map((q) => (
             <TableRow>
               <TableCell>
-                <Link to={`/question/user/edit/${q._id}`}>
+                <Link to={`/question/user/edit/${q._id}/admin`}>
                   <Typography variant="h5"> {q.title}</Typography>
                 </Link>
               </TableCell>
@@ -85,11 +93,24 @@ function UserQuestions() {
 
 function UserHeader() {
   const adminContext = useContext(AdminContext);
+  const [userQuestions, setUserQuestions] = useState([]);
+  const [userAnswers, setUserAnswers] = useState([]);
   useEffect(() => {
     const getUserQuestion = async () => {
-    //   adminContext.refreshUser();
-    };
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/questions/user/${adminContext.handlingUserID}`
+        );
+        setUserQuestions(response.data);
 
+        const answers = await axios.get(
+          `http://localhost:8000/answer/user/${adminContext.handlingUserID}`
+        );
+        setUserAnswers(answers.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
     getUserQuestion();
   }, [adminContext.loadingQuestions]);
 
@@ -156,7 +177,7 @@ function UserHeader() {
 
                         <Grid item>
                           <Typography variant={"h5"}>
-                            {adminContext.handlingUser.questions.length}
+                            {userQuestions.length}
                           </Typography>
                         </Grid>
                       </Grid>
@@ -170,7 +191,7 @@ function UserHeader() {
 
                         <Grid item>
                           <Typography variant={"h5"}>
-                            {adminContext.handlingUser.answers.length}
+                            {userAnswers.length}
                           </Typography>
                         </Grid>
                       </Grid>
@@ -197,12 +218,14 @@ function UserHeader() {
 export default function AdminUserProfile() {
   const authContext = useContext(AuthContext);
   const questionContext = useContext(QuestionContext);
+  const adminContext = useContext(AdminContext);
   useEffect(() => {
-    authContext.refreshUserInfo();
     questionContext.fetchUser();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    console.log(adminContext);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  return authContext.user === null ? (
+  return authContext.isLoading ? (
     <Skeleton variant="square">
       {" "}
       <Container sx={{ width: 1000, height: 800 }} />

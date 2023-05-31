@@ -3,11 +3,7 @@
 import "./stylesheets/App.css";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import SignUpModal from "./components/signUpModal";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LoginModal from "./components/loginModal";
 import { Container } from "@mui/material";
 import axios from "axios";
@@ -34,7 +30,6 @@ import AdminUserTagsPage from "./components/adminUserTags";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
-
   axios.defaults.withCredentials = true;
 
   return (
@@ -89,9 +84,13 @@ function App() {
                       path="/admin/user/:id/questions"
                       element={<AdminUserAnsweredPage />}
                     />
-                      <Route
+                    <Route
                       path="/admin/user/:id/answers"
                       element={<AdminDetailedQuestionEditPage />}
+                    />
+                    <Route
+                      path="/question/user/edit/:id/admin"
+                      element={<EditQuestionForm adminEdit={true} />}
                     />
                   </Routes>
                 </Container>

@@ -65,7 +65,7 @@ const validateQuestionTags = (questionTags) => {
 // Define validation schema using Yup
 
 // Your form component
-const QuestionForm = () => {
+const QuestionForm = ({adminEdit}) => {
   const validationSchema = Yup.object().shape({
     title: Yup.string().max(50, "Maximum 50 characters allowed").required(),
     summary: Yup.string()
@@ -178,7 +178,7 @@ const QuestionForm = () => {
   } = formMethods;
   const handleOnSubmit = (data) => {
     const updatedQInfo = {
-      user: authContext.userId,
+      user: (adminEdit? adminContext.handlingUserID: authContext.userId),
       title: data.title,
       summary: data.summary,
       text: data.text,
@@ -325,11 +325,11 @@ const QuestionForm = () => {
   );
 };
 
-export default function EditQuestionForm() {
+export default function EditQuestionForm({adminEdit = false}) {
   return (
     <Box>
       <Container sx={{ ml: "auto", mr: "auto" }}>
-        <QuestionForm userReputation={50} />
+        <QuestionForm adminEdit={adminEdit} />
       </Container>
     </Box>
   );

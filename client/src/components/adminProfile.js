@@ -47,22 +47,26 @@ function Users() {
       const allUsers = await axios.get(
         `http://localhost:8000/admin/${authContext.userId}/users`
       );
+      console.log(allUsers);
       setUsers(allUsers.data);
       setOpen(allUsers.data.length === 0);
     };
 
     getUsers();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleUserClick = async (id) => {
     adminContext.onUserClick(id);
-    console.log(adminContext);
   };
   const handleDelete = async (id) => {
     try {
+      if (id === authContext.userId) {
+        setError("You cant delete yourself!");
+        setOpenError(true);
+        return;
+      }
       const response = await adminContext.deleteUser(id);
-      console.log(response.status);
       if (response.status === 200) {
         setSuccess("User deleted successfully");
         setOpenSuccess(true);
@@ -72,17 +76,16 @@ function Users() {
         );
         setUsers(allUsers.data);
         setOpen(allUsers.data.length === 0);
-        questionContext.fetchAll(); 
+        questionContext.fetchAll();
         questionContext.fetchUser();
-        authContext.refreshUserInfo(); 
-
+        authContext.refreshUserInfo();
       } else {
         setError("Unable to delete user");
-        setOpenError(true); 
+        setOpenError(true);
       }
     } catch (error) {
       setError("Unable to delete user");
-      setOpenError(true); 
+      setOpenError(true);
 
       console.error(error);
     }
@@ -102,7 +105,10 @@ function Users() {
           {users.map((u) => (
             <TableRow key={u._id}>
               <TableCell>
-                <Link to={`/admin/user/${u._id}/profile`} onClick={() => handleUserClick(u)}>
+                <Link
+                  to={`/admin/user/${u._id}/profile`}
+                  onClick={() => handleUserClick(u)}
+                >
                   <Typography variant="h5"> {u.user_name}</Typography>
                 </Link>
               </TableCell>
@@ -268,7 +274,7 @@ export default function AdminProfile() {
   useEffect(() => {
     authContext.refreshUserInfo();
     questionContext.fetchUser();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return authContext.user === null ? (
     <Skeleton variant="square">

@@ -80,7 +80,6 @@ Routes for user authentication:
 */
 app.post("/login", async (req, res) => {
   try {
-
     const username = req.body.username;
     const password = req.body.password;
 
@@ -98,7 +97,6 @@ app.post("/login", async (req, res) => {
                 .status(500)
                 .json({ message: "error regenerating session" });
             }
-
           });
         } else if (req.session && req.session.userID === user._id) {
           res.status(200).json({ message: "user already logged in" });
@@ -114,10 +112,10 @@ app.post("/login", async (req, res) => {
           user: user,
         });
       } else {
-        res.send(401).json({ message: "user does not exist" });
+        res.status(403).json({ message: "incorrect password" });
       }
     } else {
-      res.send(401).json({ message: "user does not exist" });
+      res.status(401).json({ message: "user does not exist" });
     }
   } catch (err) {
     console.error("error connecting", err);
@@ -147,9 +145,7 @@ app.post("/logout", async (req, res) => {
 
 app.post("/guest", async (req, res) => {
   try {
-
     if (req.session && req.session.role) {
-
       req.session.regenerate((err) => {
         if (err) {
           console.log(err);
@@ -376,7 +372,6 @@ app.put("/submit/question/:id/edit", async (req, res) => {
       text: questionData.text,
       summary: questionData.summary,
       tags: tagIds,
-      asked_by: user._id,
     };
     const updatedQuestion = await Question.findByIdAndUpdate(
       qid, // get the question id from the request parameters
@@ -392,8 +387,8 @@ app.put("/submit/question/:id/edit", async (req, res) => {
       .status(200)
       .json({ message: "Question updated successfully", updatedQuestion });
   } catch (error) {
-    console.error("Error in /submit/question:", error);
-    res.status(500).json({ message: "Error adding question", error });
+    console.error("Error editing question:", error);
+    res.status(500).json({ message: "Error editing question", error });
   }
 });
 
@@ -523,7 +518,6 @@ app.post("/submit/:id/answer", async (req, res) => {
 });
 
 app.get("/questions/user/:id", async (req, res) => {
-
   try {
     const user_id = req.params.id;
     const userQuestions = await Question.find({ asked_by: user_id })
@@ -1024,6 +1018,15 @@ app.put("/comment/:id/upvote", async (req, res) => {
  * Routes for answers
  */
 
+app.get("/answer/user/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const userAnswers = await Answer.find({ ans_by: { $in: id } }).exec();
+  } catch (err) {
+    res.status(500).json({ message: "system error" });
+  }
+});
 app.get("/answer/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -1070,9 +1073,9 @@ app.put("/answer/:id/upvote", async (req, res) => {
       .populate("ans_by")
       .exec();
     let oldAnswer = await Answer.findById(req.params.id);
-
+    console.log(oldAnswer);
     const updatedUser = await User.findByIdAndUpdate(
-      oldAnswer.asked_by,
+      oldAnswer.ans_by,
       { $inc: { reputation: 5 } },
       { new: true }
     );
@@ -1103,7 +1106,7 @@ app.put("/answer/:id/downvote", async (req, res) => {
     let oldAnswer = await Answer.findById(req.params.id);
 
     const updatedUser = await User.findByIdAndUpdate(
-      oldAnswer.asked_by,
+      oldAnswer.ans_by,
       { $inc: { reputation: -10 } },
       { new: true }
     );
@@ -1200,7 +1203,9 @@ app.get("/admin/:id/users", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     console.log(user);
-    const users = await User.find({ _id: { $ne: user._id } });
+    // const users = await User.find({ _id: { $ne: user._id } });
+    const users = await User.find({});
+
     res.status(200).json(users);
   } catch (error) {
     console.error(error);
@@ -1335,12 +1340,10 @@ app.get("/admin/user/:id", async (req, res) => {
   }
 });
 
-
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
-
 
 // Handle server termination
 process.on("SIGINT", function () {
