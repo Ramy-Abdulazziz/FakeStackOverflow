@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useState } from "react";
 import QuestionContext from "./questionContext";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -12,8 +13,6 @@ import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
-import { useLocation } from "react-router-dom";
-
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -67,30 +66,19 @@ function AnswerComments({ answer }) {
   const onSubmit = async (data) => {
     if (authContext.userRole !== "guest") {
       try {
-        console.log(authContext);
-        const newComment = {
+        await axios.post("http://localhost:8000/comment", {
           text: data.comment,
-          userId: authContext.userId, // replace this with actual user ID
-          parentId: answer._id,
-          parentType: "Answer",
-        };
-
-        console.log(newComment);
-        const response = await axios.post("http://localhost:8000/comment", {
-          text: data.comment,
-          userId: authContext.userId, // replace this with actual user ID
+          userId: authContext.userId,
           parentId: answer._id,
           parentType: "Answer",
         });
 
-        // Add the new comment to the state
         const qComments = await axios.get(
           `http://localhost:8000/answer/${answer._id}/comments`
         );
 
         setComments(qComments.data);
 
-        // Reset the form
         reset();
       } catch (err) {
         console.error(err);
@@ -210,7 +198,6 @@ function AnswerComments({ answer }) {
 }
 
 function SingleAnswer({ answer }) {
-  const questionContext = useContext(QuestionContext);
   const [open, setOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [answr, setAnswer] = useState(answer);
@@ -245,7 +232,6 @@ function SingleAnswer({ answer }) {
           { user: authContext.userId }
         );
         // After successfully upvoting, fetch the updated comment data.
-        console.log(updatedAnswer.data);
         setAnswer(updatedAnswer.data);
       } catch (err) {
         console.error(err);
@@ -270,7 +256,6 @@ function SingleAnswer({ answer }) {
           { user: authContext.userId }
         );
         // After successfully upvoting, fetch the updated comment data.
-        console.log(updatedAnswer.data);
         setAnswer(updatedAnswer.data);
       } catch (err) {
         console.error(err);
@@ -478,7 +463,6 @@ function SingleComment({ comment }) {
           { user: authContext.userId }
         );
         // After successfully upvoting, fetch the updated comment data.
-        console.log(updatedComment.data);
         setComment(updatedComment.data);
       } catch (err) {
         console.error(err);
@@ -619,16 +603,7 @@ function QuestionComments({ question }) {
   const onSubmit = async (data) => {
     if (authContext.userRole !== "guest") {
       try {
-        console.log(authContext);
-        const newComment = {
-          text: data.comment,
-          userId: authContext.userId, // replace this with actual user ID
-          parentId: question._id,
-          parentType: "Question",
-        };
-
-        console.log(newComment);
-        const response = await axios.post("http://localhost:8000/comment", {
+        await axios.post("http://localhost:8000/comment", {
           text: data.comment,
           userId: authContext.userId, // replace this with actual user ID
           parentId: question._id,
@@ -788,7 +763,6 @@ function QuestionHeader({ question }) {
     }
   };
   const handleUpvote = async () => {
-    console.log(authContext.reputation);
 
     if (authContext.reputation > 50) {
       questionContext.handleUpvote(question);
@@ -815,7 +789,6 @@ function QuestionHeader({ question }) {
   };
 
   const handleDownVote = async () => {
-    console.log(authContext.reputation);
     if (authContext.reputation > 50) {
       questionContext.handleDownvote(question);
 
@@ -1032,7 +1005,6 @@ export default function DetailedQuestionPage() {
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const { id } = useParams();
 
@@ -1047,8 +1019,7 @@ export default function DetailedQuestionPage() {
         const getQuestionDetails = await axios.get(
           `http://localhost:8000/questions?id=${id}`
         );
-        console.log("getting question details" + getQuestionDetails);
-        console.log(getQuestionDetails);
+       
         setQuestion(getQuestionDetails.data[0]);
         setAnswers(
           getQuestionDetails.data[0].answers.sort(

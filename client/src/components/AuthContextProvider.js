@@ -15,7 +15,6 @@ export default function AuthContextProvider({ children }) {
 
   useEffect(() => {
     const checkSession = async () => {
-      console.log("resetting user data");
       try {
         const response = await axios.get(
           "http://localhost:8000/validate-session"
@@ -34,7 +33,7 @@ export default function AuthContextProvider({ children }) {
           setUserRole("guest");
         }
       } catch (err) {
-        console.log("error fetching validation info", err);
+        console.error("error fetching validation info", err);
       } finally {
       }
     };
@@ -44,7 +43,6 @@ export default function AuthContextProvider({ children }) {
 
   const loginHandler = async (data) => {
     if (data.userRole !== "guest") {
-      console.log(data);
       setIsLoggedIn(true);
       setUserName(data.user_name);
       setUserId(data.userID);
@@ -80,14 +78,13 @@ export default function AuthContextProvider({ children }) {
         setUserRole("guest");
       }
     } catch (err) {
-      console.log("error fetching validation info", err);
+      console.error("error fetching validation info", err);
     }
   };
 
   const logoutHandler = async () => {
     try {
       await axios.post("http://localhost:8000/logout").then((response) => {
-        console.log(response.status);
         if (response.status === 200) {
           setIsLoggedIn(false);
           setUserName("");
@@ -114,6 +111,7 @@ export default function AuthContextProvider({ children }) {
         reputation: reputation,
         user: user,
         signUp: signUp,
+        isLoading: isLoading,
         refreshUserInfo: refreshUserInfo,
         onLogin: loginHandler,
         onLogout: logoutHandler,

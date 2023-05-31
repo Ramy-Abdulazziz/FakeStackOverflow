@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useState } from "react";
 import QuestionContext from "./questionContext";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -14,7 +15,6 @@ import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
 
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
-import { useLocation } from "react-router-dom";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm } from "react-hook-form";
@@ -70,16 +70,7 @@ function AnswerComments({ answer }) {
   const onSubmit = async (data) => {
     if (authContext.userRole !== "guest") {
       try {
-        console.log(authContext);
-        const newComment = {
-          text: data.comment,
-          userId: authContext.userId, // replace this with actual user ID
-          parentId: answer._id,
-          parentType: "Answer",
-        };
-
-        console.log(newComment);
-        const response = await axios.post("http://localhost:8000/comment", {
+        await axios.post("http://localhost:8000/comment", {
           text: data.comment,
           userId: authContext.userId, // replace this with actual user ID
           parentId: answer._id,
@@ -213,7 +204,6 @@ function AnswerComments({ answer }) {
 }
 
 function SingleAnswer({ answer }) {
-  const questionContext = useContext(QuestionContext);
   const [open, setOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [answr, setAnswer] = useState(answer);
@@ -759,30 +749,19 @@ function QuestionComments({ question }) {
   const onSubmit = async (data) => {
     if (authContext.userRole !== "guest") {
       try {
-        console.log(authContext);
-        const newComment = {
+        await axios.post("http://localhost:8000/comment", {
           text: data.comment,
-          userId: authContext.userId, // replace this with actual user ID
-          parentId: question._id,
-          parentType: "Question",
-        };
-
-        console.log(newComment);
-        const response = await axios.post("http://localhost:8000/comment", {
-          text: data.comment,
-          userId: authContext.userId, // replace this with actual user ID
+          userId: authContext.userId,
           parentId: question._id,
           parentType: "Question",
         });
 
-        // Add the new comment to the state
         const qComments = await axios.get(
           `http://localhost:8000/question/${question._id}/comments`
         );
 
         setComments(qComments.data);
 
-        // Reset the form
         reset();
       } catch (err) {
         console.error(err);
@@ -1172,7 +1151,6 @@ export default function DetailedQuestionEditPage() {
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const { id } = useParams();
 

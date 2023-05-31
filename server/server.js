@@ -11,7 +11,6 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-// const cookieParser = require("cookie-parser");
 
 const port = 8000;
 app.use(express.urlencoded({ extended: false }));
@@ -24,7 +23,6 @@ app.use(
 );
 
 app.use(express.json());
-// app.use(cookieParser());
 
 // Connect to MongoDB
 const mongoDB = "mongodb://127.0.0.1:27017/fake_so";
@@ -82,7 +80,6 @@ Routes for user authentication:
 */
 app.post("/login", async (req, res) => {
   try {
-    console.log(req.session.id);
 
     const username = req.body.username;
     const password = req.body.password;
@@ -102,13 +99,10 @@ app.post("/login", async (req, res) => {
                 .json({ message: "error regenerating session" });
             }
 
-            console.log("previous log in detected, regenerating session");
           });
         } else if (req.session && req.session.userID === user._id) {
-          console.log("user already logged in");
           res.status(200).json({ message: "user already logged in" });
         }
-        console.log("Correct Password - logging in");
         req.session.userId = user._id;
         req.session.role = user.admin ? "admin" : "user"; // Store user ID in session
         res.status(200).json({
@@ -153,10 +147,8 @@ app.post("/logout", async (req, res) => {
 
 app.post("/guest", async (req, res) => {
   try {
-    console.log("guest user logging in ");
 
     if (req.session && req.session.role) {
-      console.log("regenerating session");
 
       req.session.regenerate((err) => {
         if (err) {
@@ -166,14 +158,12 @@ app.post("/guest", async (req, res) => {
             .json({ message: "error regenerating session", err });
         }
         req.session.role = "guest";
-        console.log("successful guest login on server side");
         return res
           .status(200)
           .json({ message: "guest login successful", userRole: "guest" });
       });
     } else {
       req.session.role = "guest";
-      console.log("successful guest login on server side");
       return res
         .status(200)
         .json({ message: "guest login successful", userRole: "guest" });
@@ -290,7 +280,6 @@ app.put("user/:id/decrease/:amount/", async (req, res) => {
 });
 //Define routes
 app.post("/submit/question", async (req, res) => {
-  console.log("receiving new question");
   try {
     const questionData = req.body;
     const user = await User.findById(questionData.user);
@@ -348,7 +337,6 @@ app.post("/submit/question", async (req, res) => {
 });
 
 app.put("/submit/question/:id/edit", async (req, res) => {
-  console.log("receiving new question");
   try {
     const questionData = req.body;
     const qid = req.params.id;
@@ -400,7 +388,6 @@ app.put("/submit/question/:id/edit", async (req, res) => {
         runValidators: true, // option that asks mongoose to run the model's validators again, as the data is being updated
       }
     );
-    console.log(updatedQuestion);
     res
       .status(200)
       .json({ message: "Question updated successfully", updatedQuestion });
@@ -472,7 +459,6 @@ app.delete("/question/:id/delete", async (req, res) => {
       if (!isTagUsedByUser) {
         // If not, remove the user's ID from the tag's `used_by` field
         const index = tag.used_by.indexOf(userId);
-        console.log("removing user");
         if (index > -1) {
           tag.used_by.splice(index, 1);
           await tag.save();
@@ -497,7 +483,6 @@ app.delete("/question/:id/delete", async (req, res) => {
 });
 
 app.post("/submit/:id/answer", async (req, res) => {
-  console.log("receiving answer for question");
   try {
     const id = req.params.id;
     const data = req.body;
@@ -538,7 +523,6 @@ app.post("/submit/:id/answer", async (req, res) => {
 });
 
 app.get("/questions/user/:id", async (req, res) => {
-  console.log("received request for user questions");
 
   try {
     const user_id = req.params.id;
@@ -594,7 +578,6 @@ app.get("/questions/answered/:id", async (req, res) => {
   }
 });
 app.get("/questions", async (req, res) => {
-  console.log("Received request for questions");
   try {
     const tagName = req.query.tagName;
     const unanswered = req.query.unanswered === "true";
@@ -1216,7 +1199,6 @@ app.put("/answer/:id", async (req, res) => {
 app.get("/admin/:id/users", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    console.log("found user");
     console.log(user);
     const users = await User.find({ _id: { $ne: user._id } });
     res.status(200).json(users);
@@ -1224,10 +1206,6 @@ app.get("/admin/:id/users", async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
-});
-// Start the server
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
 });
 
 app.delete("/admin/:id/delete", async (req, res) => {
@@ -1321,7 +1299,6 @@ app.delete("/admin/:id/delete", async (req, res) => {
         comment.parentType === "Question"
           ? await Question.findById(comment.parent)
           : await Answer.findById(comment.parent);
-      console.log(commentedEntity);
       if (commentedEntity) {
         commentedEntity.comments.pull(comment._id);
         await commentedEntity.save();
@@ -1357,6 +1334,13 @@ app.get("/admin/user/:id", async (req, res) => {
     res.status(500).json({ message: "server error" });
   }
 });
+
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
+
 
 // Handle server termination
 process.on("SIGINT", function () {

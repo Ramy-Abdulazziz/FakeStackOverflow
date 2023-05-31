@@ -1,9 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useState } from "react";
 import QuestionContext from "./questionContext";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
-import AuthContext from "./authContext";
 import QuizIcon from "@mui/icons-material/Quiz";
 import axios from "axios";
 import {
@@ -12,9 +11,7 @@ import {
   Skeleton,
   Typography,
   Grid,
-  Button,
   CardActionArea,
-  Divider,
   Badge,
 } from "@mui/material";
 import { useNavigate } from "react-router";

@@ -1,7 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useState } from "react";
 import QuestionContext from "./questionContext";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import AuthContext from "./authContext";
 import QuizIcon from "@mui/icons-material/Quiz";
@@ -48,7 +48,6 @@ function SingleTagContainer({ tag }) {
         );
 
         setTagQuestions(tagQuestions.data);
-        console.log(tagQuestions.data);
       } catch (err) {
         console.log(err);
       }
@@ -69,7 +68,6 @@ function SingleTagContainer({ tag }) {
       const response = await axios.get(
         `http://localhost:8000/tags/${changedName}/usedby`
       );
-      console.log(response);
       if (response.status === 200) {
         setIsEditing(true);
       }

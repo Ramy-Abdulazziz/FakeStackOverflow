@@ -1,19 +1,15 @@
 // ************** THIS IS YOUR APP'S ENTRY POINT. CHANGE THIS FILE AS NEEDED. **************
 // ************** DEFINE YOUR REACT COMPONENTS in ./components directory **************
 import "./stylesheets/App.css";
-import FakeStackOverflow from "./components/fakestackoverflow.js";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import SignUpModal from "./components/signUpModal";
 import {
   BrowserRouter as Router,
   Route,
   Routes,
-  useParams,
 } from "react-router-dom";
 import LoginModal from "./components/loginModal";
 import { Container } from "@mui/material";
-import QuestionDisplay from "./components/questionDisplay";
-import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import AuthContextProvider from "./components/AuthContextProvider";
 import HomePage from "./components/homePage";
@@ -34,7 +30,6 @@ import AdminContextProvider from "./components/adminContextProvider";
 import AdminUserProfile from "./components/adminUserProfile";
 import AdminUserAnsweredPage from "./components/adminUserAnswers";
 import AdminDetailedQuestionEditPage from "./components/adminDetailedQuestionEdit";
-import AdminContext from "./components/adminContext";
 import AdminUserTagsPage from "./components/adminUserTags";
 
 function App() {

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
@@ -45,7 +46,6 @@ export default function LoginModal({ username }) {
   useEffect(() => {
     const checkLoginStatus = async () => {
       if (authContext.isLoggedIn && authContext.userRole !== "guest") {
-        console.log(authContext);
         navigate("/home");
       }
     };
@@ -58,7 +58,6 @@ export default function LoginModal({ username }) {
     try {
       await axios.post("http://localhost:8000/login", data).then((response) => {
         if (response.status === 200) {
-          console.log(response);
           authContext.onLogin(response.data);
           questionContext.fetchAll();
           setLoginSuccess(true);
@@ -73,7 +72,7 @@ export default function LoginModal({ username }) {
     } catch (err) {
       console.log("error", err);
       reset();
-
+      setError("Communication failure - please try again");
       setLoginError(true);
     }
   };
@@ -82,16 +81,18 @@ export default function LoginModal({ username }) {
     try {
       await axios.post("http://localhost:8000/guest").then((response) => {
         if (response.status === 200) {
-          console.log(response.data);
           authContext.onLogin(response.data);
           questionContext.fetchAll();
           navigate("/home");
         } else {
+          setError("Error loggin in - please try again");
           setLoginError(true);
         }
       });
     } catch (err) {
       console.log("error", err);
+      setError("Communication failure - please try again");
+      setLoginError(true);
       setLoginError(true);
     }
   };
@@ -221,7 +222,7 @@ export default function LoginModal({ username }) {
 
       <Snackbar open={loginError} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-          Username or email incorrect - please try again
+          {error}
         </Alert>
       </Snackbar>
     </ThemeProvider>

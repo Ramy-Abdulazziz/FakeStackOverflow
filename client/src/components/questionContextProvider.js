@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useContext, useEffect } from "react";
 import AuthContext from "./authContext";
 import QuestionContext from "./questionContext";
@@ -36,7 +37,6 @@ export default function QuestionContextProvider({ children }) {
     try {
       setLoadingQuestions(true);
       const questions = await axios.get("http://localhost:8000/questions");
-      console.log("response", questions.data);
       setAllQuestions(questions.data);
 
       setDisplayedQuestions(
@@ -54,11 +54,9 @@ export default function QuestionContextProvider({ children }) {
   const fetchAllUserQuestions = async () => {
     try {
       setLoadingQuestions(true);
-      console.log(authContext.userId);
       const response = await axios.get(
         `http://localhost:8000/questions/user/${authContext.user._id}`
       );
-      console.log(response);
       setUserQuestions(
         response.data.sort(
           (a, b) => new Date(b.ask_date) - new Date(a.ask_date)
@@ -215,9 +213,12 @@ export default function QuestionContextProvider({ children }) {
 
   const handleDownVote = async (question) => {
     try {
-      await axios.put(`http://localhost:8000/question/${question._id}/downvote`, {
-        user: authContext.userId,
-      });
+      await axios.put(
+        `http://localhost:8000/question/${question._id}/downvote`,
+        {
+          user: authContext.userId,
+        }
+      );
 
       await fetchAllQuestions();
       await fetchAllQuestions();
@@ -250,7 +251,6 @@ export default function QuestionContextProvider({ children }) {
     await axios
       .post(url, data)
       .then((response) => {
-        console.log(response);
         fetchAllQuestions();
         fetchAllUserQuestions();
       })
@@ -278,7 +278,6 @@ export default function QuestionContextProvider({ children }) {
     await axios
       .put(url, data)
       .then((response) => {
-        console.log(response);
         fetchAllQuestions();
         fetchAllUserQuestions();
       })

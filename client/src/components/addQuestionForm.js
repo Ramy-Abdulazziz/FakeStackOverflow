@@ -283,7 +283,6 @@ const QuestionForm = () => {
 };
 
 export default function AddQuestionForm() {
-  const authContext = useContext(AuthContext);
 
   return (
     <Box>

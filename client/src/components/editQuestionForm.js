@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
@@ -43,14 +44,12 @@ const validateLinks = (bodyText) => {
   return valid;
 };
 const splitTags = (tags) => {
-  console.log(tags);
   if (tags === null || tags === "" || tags === undefined) return [];
   let splitTags = Array.from(tags.match(new RegExp("[^\\b\\s+]+", "g")));
 
   return splitTags;
 };
 const validateQuestionTags = (questionTags) => {
-  console.log(questionTags);
   let invalid = new RegExp(
     "[\\w-?\\w]{11,}|([^\\w\\-]|_)|(?:^|\\s)-\\w+|\\w-(?!\\w)",
     "g"
@@ -77,7 +76,6 @@ const QuestionForm = () => {
       .required("Text is required"),
     tags: Yup.string()
       .test("tag-length", "Tag is too long, max 10 characters", (value) => {
-        console.log(value);
         if (value === undefined || value === null || value === "") return true;
         const tags = splitTags(value);
         for (let i = 0; i < tags.length; i++) {
@@ -115,7 +113,6 @@ const QuestionForm = () => {
       .test("no-tags", "Please add at least one tag", (value) => {
         const newTagsLength = splitTags(value).length;
         const existingTagsLegnth = userTags.length;
-        console.log(newTagsLength + existingTagsLegnth);
         return newTagsLength + existingTagsLegnth > 0;
       }),
   });
@@ -137,7 +134,6 @@ const QuestionForm = () => {
     const getAllTags = async () => {
       try {
         const allTags = await axios.get(`http://localhost:8000/tags`);
-        console.log(allTags.data);
         setTags(allTags.data);
       } catch (err) {
         console.error(err);
@@ -153,7 +149,6 @@ const QuestionForm = () => {
         const question = await axios.get(
           `http://localhost:8000/questions?id=${id}`
         );
-        console.log(question.data[0]);
         setQuestionDetails(question.data[0]);
         const tagNames = question.data[0].tags.map((tag) => tag.name);
         setUserTags(tagNames);
@@ -172,7 +167,7 @@ const QuestionForm = () => {
         summary: questionDetails.summary,
         text: questionDetails.text,
         existingTags: questionDetails.tags,
-        tags: "", 
+        tags: "",
       });
     }
   }, [questionDetails]);
@@ -182,7 +177,6 @@ const QuestionForm = () => {
     formState: { errors },
   } = formMethods;
   const handleOnSubmit = (data) => {
-
     const updatedQInfo = {
       user: authContext.userId,
       title: data.title,
@@ -193,7 +187,6 @@ const QuestionForm = () => {
       question: id,
     };
 
-    console.log(updatedQInfo);
     questionContext.handleEdit(updatedQInfo);
     adminContext.refreshUser();
     navigate("/home");
@@ -333,8 +326,6 @@ const QuestionForm = () => {
 };
 
 export default function EditQuestionForm() {
-  const authContext = useContext(AuthContext);
-
   return (
     <Box>
       <Container sx={{ ml: "auto", mr: "auto" }}>

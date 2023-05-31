@@ -1,3 +1,18 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useContext } from "react";
+import AuthContext from "./authContext";
+import QuestionContext from "./questionContext";
+import FormatDateText from "../dateTextUtils";
+import LiveHelpIcon from "@mui/icons-material/LiveHelp";
+import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import Table from "@mui/material/Table";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Box,
   Container,
@@ -12,28 +27,11 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { useContext } from "react";
-import AuthContext from "./authContext";
-import QuestionContext from "./questionContext";
-import FormatDateText from "../dateTextUtils";
-import LiveHelpIcon from "@mui/icons-material/LiveHelp";
-import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
-import QuestionDisplay from "./questionDisplay";
-import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import { useState, useEffect } from "react";
-import { Link, useActionData } from "react-router-dom";
 
 function UserQuestions() {
   const questionContext = useContext(QuestionContext);
   const [userQuestions, setUserQuestions] = useState([]);
   const [open, setOpen] = useState(false);
-
 
   useEffect(() => {
     const getUserQuestion = async () => {
@@ -86,7 +84,6 @@ function UserQuestions() {
 function UserHeader() {
   const authContext = useContext(AuthContext);
 
-  
   const stringAvatar = (name) => {
     return {
       sx: {
@@ -190,10 +187,10 @@ function UserHeader() {
 }
 export default function UserProfile() {
   const authContext = useContext(AuthContext);
-  const questionContext = useContext(QuestionContext); 
+  const questionContext = useContext(QuestionContext);
   useEffect(() => {
     authContext.refreshUserInfo();
-    questionContext.fetchUser(); 
+    questionContext.fetchUser();
   }, []);
   return authContext.user === null ? (
     <Skeleton variant="square">
