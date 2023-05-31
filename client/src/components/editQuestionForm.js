@@ -172,7 +172,7 @@ const QuestionForm = () => {
         summary: questionDetails.summary,
         text: questionDetails.text,
         existingTags: questionDetails.tags,
-        tags: "", // put default value for new tags here
+        tags: "", 
       });
     }
   }, [questionDetails]);
@@ -182,7 +182,6 @@ const QuestionForm = () => {
     formState: { errors },
   } = formMethods;
   const handleOnSubmit = (data) => {
-    // You can replace the url with your actual server endpoint
 
     const updatedQInfo = {
       user: authContext.userId,
