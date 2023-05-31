@@ -29,6 +29,8 @@ import AddQuestionForm from "./components/addQuestionForm";
 import AddAnswer from "./components/addAnswerForm";
 import EditQuestionForm from "./components/editQuestionForm";
 import DetailedQuestionEditPage from "./components/detailedQuestionEdit";
+import AdminProfile from "./components/adminProfile";
+import AdminContextProvider from "./components/adminContextProvider";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -37,46 +39,49 @@ function App() {
 
   return (
     <AuthContextProvider>
-      <QuestionContextProvider>
-        <ThemeProvider theme={darkTheme}>
-          <Router>
-            <Header />
-            <Box sx={{ maxHeight: "100%", maxWidth: 1800 }}>
-              <Container sx={{ maxWidth: 1800 }}>
-                <Routes>
-                  <Route path="/" element={<LoginModal />} />
-                  <Route path="/sign-up" element={<SignUpModal />} />
-                  <Route path="/home" element={<HomePage />} />
-                  <Route path="/all-tags" element={<TagPage />} />
-                  <Route
-                    path="/answers/:id"
-                    element={<DetailedQuestionPage />}
-                  />
-                  <Route path="/user/:id" element={<UserProfile />} />
-                  <Route
-                    path="/user/:id/questions"
-                    element={<UserAnsweredPage />}
-                  />
-                  <Route path="/user/:id/tags" element={<UserTagsPage />} />
-                  <Route path="/question/add" element={<AddQuestionForm />} />
-                  <Route
-                    path="/question/:id/answer/add"
-                    element={<AddAnswer />}
-                  />
-                  <Route
-                    path="/question/user/edit/:id"
-                    element={<EditQuestionForm />}
-                  />
-                  <Route
-                    path="/user/:id/answers"
-                    element={<DetailedQuestionEditPage />}
-                  />
-                </Routes>
-              </Container>
-            </Box>
-          </Router>
-        </ThemeProvider>
-      </QuestionContextProvider>
+      <AdminContextProvider>
+        <QuestionContextProvider>
+          <ThemeProvider theme={darkTheme}>
+            <Router>
+              <Header />
+              <Box sx={{ maxHeight: "100%", maxWidth: 1800 }}>
+                <Container sx={{ maxWidth: 1800 }}>
+                  <Routes>
+                    <Route path="/" element={<LoginModal />} />
+                    <Route path="/sign-up" element={<SignUpModal />} />
+                    <Route path="/home" element={<HomePage />} />
+                    <Route path="/all-tags" element={<TagPage />} />
+                    <Route
+                      path="/answers/:id"
+                      element={<DetailedQuestionPage />}
+                    />
+                    <Route path="/user/:id" element={<UserProfile />} />
+                    <Route
+                      path="/user/:id/questions"
+                      element={<UserAnsweredPage />}
+                    />
+                    <Route path="/user/:id/tags" element={<UserTagsPage />} />
+                    <Route path="/question/add" element={<AddQuestionForm />} />
+                    <Route
+                      path="/question/:id/answer/add"
+                      element={<AddAnswer />}
+                    />
+                    <Route
+                      path="/question/user/edit/:id"
+                      element={<EditQuestionForm />}
+                    />
+                    <Route
+                      path="/user/:id/answers"
+                      element={<DetailedQuestionEditPage />}
+                    />
+                    <Route path="/admin/:id//" element={<AdminProfile />} />
+                  </Routes>
+                </Container>
+              </Box>
+            </Router>
+          </ThemeProvider>
+        </QuestionContextProvider>
+      </AdminContextProvider>
     </AuthContextProvider>
   );
 }

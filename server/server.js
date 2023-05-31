@@ -186,7 +186,10 @@ app.post("/guest", async (req, res) => {
 
 app.get("/validate-session", async (req, res) => {
   try {
-    if (req.session && req.session.role === ("user" || "admin")) {
+    if (
+      req.session &&
+      (req.session.role === "user" || req.session.role === "admin")
+    ) {
       const id = req.session.userId;
       const user = await User.findById(id);
       res.status(200).json({
@@ -667,7 +670,13 @@ app.get("/search", async (req, res) => {
       break;
     case "tags":
       const tag = await Tag.findOne({ name: searchText });
-      searchQuery = { tags: { $in: [tag._id] } };
+      // Check if the tag exists
+      if (tag) {
+        searchQuery = { tags: { $in: [tag._id] } };
+      } else {
+        // If the tag doesn't exist, return an empty array
+        return res.json([]);
+      }
       break;
     case "links":
       const linkRegex = new RegExp("\\[([^\\s\\]]+)\\]\\((.*?)\\)", "g");
@@ -875,7 +884,7 @@ app.put("/question/:id/upvote", async (req, res) => {
       { $inc: { upvotes: 1 } },
       { new: true }
     );
-    const updated  = await User.findByIdAndUpdate(
+    const updated = await User.findByIdAndUpdate(
       updatedQuestion.asked_by,
       { $inc: { reputation: 5 } },
       { new: true }
@@ -1006,7 +1015,7 @@ app.put("/comment/:id/upvote", async (req, res) => {
       res.status(404).send("Comment not found");
       return;
     }
-  
+
     // Send a success response
     res.status(200).json(updatedComment);
   } catch (err) {
@@ -1191,10 +1200,138 @@ app.put("/answer/:id", async (req, res) => {
   }
 });
 
+app.get("/admin/:id/users", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    console.log("found user");
+    console.log(user);
+    const users = await User.find({ _id: { $ne: user._id } });
+    res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
+
+app.delete("/admin/:id/delete", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+
+    // Fetch user's questions, answers and comments
+    const userQuestions = await Question.find({ asked_by: user._id });
+    const userAnswers = await Answer.find({ ans_by: user._id });
+    const userComments = await Comment.find({ created_by: user._id });
+    console.log(userQuestions);
+    // Delete all questions, their answers and comments
+    for (let question of userQuestions) {
+      // Delete all comments of the question
+      for (let commentId of question.comments) {
+        await User.updateMany(
+          { comments: { $in: [commentId] } },
+          { $pull: { comments: commentId } }
+        );
+        await Comment.findByIdAndRemove(commentId);
+      }
+      console.log("deleting answers");
+      // Delete all answers and their comments
+      console.log(question.answers);
+      for (let answerId of question.answers) {
+        const answer = await Answer.findById(answerId);
+
+        await User.updateMany(
+          { answers: { $in: [answerId] } },
+          { $pull: { answers: answerId } }
+        );
+
+        // Delete all comments of the answer
+        for (let commentId of answer.comments) {
+          await User.updateMany(
+            { comments: { $in: [commentId] } },
+            { $pull: { comments: commentId } }
+          );
+          await Comment.findByIdAndRemove(commentId);
+        }
+        // Remove the answer from the user who answered it
+        const answeredByUser = await User.findById(answer.ans_by);
+        if (answeredByUser) {
+          answeredByUser.answers.pull(answer._id);
+          await answeredByUser.save();
+        } else {
+          console.error(`No user found with id ${answer.ans_by}`);
+        }
+
+        await Question.updateMany(
+          { answers: { $in: [answerId] } },
+          { $pull: { answers: answerId } }
+        );
+        // Delete the answer itself
+        await Answer.findByIdAndRemove(answer._id);
+      }
+
+      // Delete the question itself
+      await Question.findByIdAndRemove(question._id);
+    }
+
+    // Delete all answers and their comments
+    for (let answer of userAnswers) {
+      // Delete all comments of the answer
+      for (let commentId of answer.comments) {
+        await User.updateMany(
+          { comments: { $in: [commentId] } },
+          { $pull: { comments: commentId } }
+        );
+        await Comment.findByIdAndRemove(commentId);
+      }
+      await Question.updateMany(
+        { answers: { $in: [answer._id] } },
+        { $pull: { answers: answer._id } }
+      );
+      // Delete the answer itself
+      await Answer.findByIdAndRemove(answer._id);
+    }
+
+    // Delete all user's comments
+    for (let comment of userComments) {
+      // Remove the comment from the corresponding question or answer
+      console.log(comment);
+      const commentedEntity =
+        comment.parentType === "Question"
+          ? await Question.findById(comment.parent)
+          : await Answer.findById(comment.parent);
+      console.log(commentedEntity);
+      if (commentedEntity) {
+        commentedEntity.comments.pull(comment._id);
+        await commentedEntity.save();
+      }
+      // Delete the comment itself
+      await Comment.findByIdAndRemove(comment._id);
+    }
+
+    // For each tag, remove the user's ID from the tag's `used_by` field
+    const tags = await Tag.find({ used_by: { $in: [user._id] } });
+    for (let tag of tags) {
+      tag.used_by.pull(user._id);
+      await tag.save();
+    }
+
+    // Finally, delete the user
+    await User.findByIdAndRemove(userId);
+
+    res
+      .status(200)
+      .json({ message: "User and all related data deleted successfully" });
+  } catch (error) {
+    console.error("Error in /admin/:id/delete:", error);
+    res.status(500).json({ message: "Error deleting user", error });
+  }
+});
+
+app.get("/admin/user/:id", async (req, res) => {});
 
 // Handle server termination
 process.on("SIGINT", function () {
