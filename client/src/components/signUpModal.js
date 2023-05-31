@@ -5,15 +5,17 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Link from "@mui/material/Link";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useContext, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import axios from "axios";
+import { Stack, FormControl } from "@mui/material";
+import AuthContext from "./authContext";
+import QuestionContext from "./questionContext";
 
 const schema = yup.object().shape({
   username: yup.string().required("Username is required"),
@@ -37,7 +39,7 @@ const schema = yup.object().shape({
       "Password should not contain the email",
       function (value) {
         const { email } = this.parent;
-        const emailKey = email.split('@')[0];
+        const emailKey = email.split("@")[0];
         if (emailKey && value.includes(emailKey)) {
           return false;
         }
@@ -50,21 +52,43 @@ const schema = yup.object().shape({
 });
 
 export default function SignUpModal() {
+  const formMethods = useForm({
+    resolver: yupResolver(schema),
+  });
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
+  } = formMethods;
 
   const [open, setOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState([]);
   const [success, setSuccess] = useState(false);
-  const darkTheme = createTheme({ palette: { mode: "dark" } });
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  const questionContext = useContext(QuestionContext);
 
+  const handleGuestLogin = async () => {
+    try {
+      await axios.post("http://localhost:8000/guest").then((response) => {
+        if (response.status === 200) {
+          console.log(response.data);
+          authContext.onLogin(response.data);
+          questionContext.fetchAll();
+          navigate("/home");
+        } else {
+          setErrorMessage("Error signing up - try again");
+          setOpen(true);
+        }
+      });
+    } catch (err) {
+      console.log("error", err);
+      setErrorMessage("Error signing up - try again");
+
+      setOpen(true);
+    }
+  };
   const onSubmit = async (data) => {
     reset();
     try {
@@ -101,135 +125,137 @@ export default function SignUpModal() {
   };
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <Container component="main" maxWidth="xs">
-        <Paper
-          sx={{
-            p: 2,
-            marginTop: 5,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            width: 500,
-            backgroundColor: (theme) =>
-              theme.palette.mode === "dark" ? "#1A2027" : "#fff",
-          }}
+    <>
+      {" "}
+      <Container sx={{ ml: "auto" }}>
+        <Typography
+          variant="h3"
+          sx={{ color: "grey", width: 200, ml: "auto", mr: "auto", mt: 5 }}
         >
-          <Typography component="h1" variant="h5">
-            Sign Up
-          </Typography>
-          <Grid
-            container
-            spacing={5}
-            direction="column"
-            mt={2}
-            sx={{
-              alignItems: "center",
-            }}
-          >
-            <Grid item xs="auto">
-              <Typography component="p">Fill In Your Details Below</Typography>
-            </Grid>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <Grid item xs="auto">
-                <TextField
-                  {...register("username")}
-                  id="outlined-required"
-                  label="Username"
-                />
-
-                <Grid item>
-                  {errors.username && (
-                    <Typography component="p">
-                      This field is required
-                    </Typography>
-                  )}
-                </Grid>
-              </Grid>
-              <Grid item xs="auto">
-                <TextField
-                  {...register("email")}
-                  id="outlined-required"
-                  label="Email"
-                />
-                <Grid item xs="auto">
-                  {errors.email && (
-                    <Typography component="p">
-                      This field is required and should be a valid email
-                    </Typography>
-                  )}
-                </Grid>
-              </Grid>
-              <Grid item xs="auto">
-                <TextField
-                  {...register("password")}
-                  id="outlined-password-input"
-                  label="Password"
-                  type="password"
-                  autoComplete="current-password"
-                />
-
-                <Grid item xs="auto">
-                  {errors.password && (
-                    <Typography component="p">
-                      {errors.password.message}
-                    </Typography>
-                  )}
-                </Grid>
-              </Grid>
-              <Grid item xs="auto">
-                <TextField
-                  {...register("confirmPassword")}
-                  id="outlined-confirm-password-input"
-                  label="Confirm Password"
-                  type="password"
-                />
-                <Grid item xs="auto">
-                  {errors.confirmPassword && (
-                    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-                    <Alert
-                      onClose={handleClose}
-                      severity={ "error"}
-                    >
-                      {errors.confirmPassword.message}
-                    </Alert>
-                  </Snackbar>
-                  )}
-                </Grid>
-              </Grid>
-
-              <Grid item xs="auto">
-                <Button type="submit" variant="contained" sx={{ mt: 3, ml: 8 }}>
-                  Sign Up
-                </Button>
-              </Grid>
-            </form>
-
-            <Grid item xs="auto">
-              <Button type="submit" variant="contained" sx={{ mt: 3 }}>
-                Continue as Guest
-              </Button>
-            </Grid>
-          </Grid>
-        </Paper>
-        <Grid
-          container
-          spacing={2}
-          direction="row"
-          sx={{
-            alignItems: "center",
-            mt: 2,
-            ml: 8,
-          }}
-        >
-          <Grid item>
-            <Link href="/" variant="body2">
-              {"Already have an account? Log In"}
-            </Link>
-          </Grid>
-        </Grid>
+          Sign Up
+        </Typography>
       </Container>
+      <Grid
+        container
+        spacing={5}
+        direction="column"
+        mt={2}
+        sx={{
+          alignItems: "center",
+        }}
+      >
+        <Grid item>
+          <Typography variant="h5" sx={{ color: "grey" }}>
+            Fill In Your Details Below
+          </Typography>
+        </Grid>
+      </Grid>
+      <Paper elevation={3} sx={{ height: 750, mt: 5, paddingTop: 5 }}>
+        <Container>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack
+              spacing={5}
+              direction={"column"}
+              sx={{ width: 300, ml: "auto", mr: "auto", mt: 5 }}
+            >
+              <Controller
+                name="username"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    error={!!errors.username}
+                    helperText={errors.username?.message}
+                    label="username"
+                    multiline
+                    sx={{ mt: 1 }}
+                    variant="filled"
+                  />
+                )}
+              />
 
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    error={!!errors.email}
+                    helperText={errors.email?.message}
+                    label="email"
+                    multiline
+                    sx={{ mt: 1 }}
+                    variant="filled"
+                  />
+                )}
+              />
+
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    error={!!errors.password}
+                    helperText={errors.password?.message}
+                    label="password"
+                    type="password"
+                    sx={{ mt: 1 }}
+                    variant="filled"
+                  />
+                )}
+              />
+
+              <Controller
+                name="confirmPassword"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    error={!!errors.confirmPassword}
+                    helperText={errors.confirmPassword?.message}
+                    label="confirmPassword"
+                    sx={{ mt: 1 }}
+                    variant="filled"
+                    type="password"
+                  />
+                )}
+              />
+
+              {errors.confirmPassword && (
+                <Snackbar
+                  open={open}
+                  autoHideDuration={6000}
+                  onClose={handleClose}
+                >
+                  <Alert onClose={handleClose} severity={"error"}>
+                    {errors.confirmPassword.message}
+                  </Alert>
+                </Snackbar>
+              )}
+
+              <Button type="submit" variant="contained" sx={{ mt: 3, ml: 8 }}>
+                Sign Up
+              </Button>
+            </Stack>
+          </form>
+          <Stack sx={{ width: 300, ml: "auto", mr: "auto", mt: 5 }}>
+            <Button
+              type="button"
+              onClick={handleGuestLogin}
+              variant="contained"
+              sx={{ mt: 3 }}
+            >
+              Continue as Guest
+            </Button>
+            <Container sx={{ mt: 3, ml: 1 }}>
+              <Link href="/" variant="body2">
+                {"Already have an account? Log In"}
+              </Link>
+            </Container>
+          </Stack>
+        </Container>
+      </Paper>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert
           onClose={handleClose}
@@ -238,6 +264,6 @@ export default function SignUpModal() {
           {errorMessage}
         </Alert>
       </Snackbar>
-    </ThemeProvider>
+    </>
   );
 }

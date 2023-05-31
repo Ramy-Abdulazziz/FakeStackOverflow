@@ -1,6 +1,5 @@
 Add data model figures in this directory.
-
-'''
+```
 classDiagram
   class User {
     user_name: String
@@ -68,4 +67,4 @@ classDiagram
   User --|> Answer: upvotes
   User --|> Comment: upvotes
 
-  '''
+```  

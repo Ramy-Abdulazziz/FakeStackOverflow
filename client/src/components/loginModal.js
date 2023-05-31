@@ -12,22 +12,36 @@ import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { useState, useContext, useEffect } from "react";
 import axios from "axios";
-
-import Header from "./header";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import QuestionContext from "./questionContext";
+
+const schema = yup.object().shape({
+  username: yup.string().required("Username is required"),
+
+  password: yup.string().required("Password is required"),
+});
 
 export default function LoginModal({ username }) {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
   const [loginError, setLoginError] = useState(false);
   const [error, setError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState(false);
-  const { handleSubmit, control } = useForm();
   const authContext = useContext(AuthContext);
   const questionContext = useContext(QuestionContext);
   const navigate = useNavigate();
 
+  const formMethods = useForm({
+    resolver: yupResolver(schema),
+  });
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = formMethods;
   useEffect(() => {
     const checkLoginStatus = async () => {
       if (authContext.isLoggedIn && authContext.userRole !== "guest") {
@@ -39,6 +53,8 @@ export default function LoginModal({ username }) {
     checkLoginStatus();
   }, [authContext.isLoggedIn, authContext.userRole, navigate]);
   const handleLogin = async (data) => {
+    reset();
+
     try {
       await axios.post("http://localhost:8000/login", data).then((response) => {
         if (response.status === 200) {
@@ -48,12 +64,16 @@ export default function LoginModal({ username }) {
           setLoginSuccess(true);
           navigate("/home");
         } else if (response.status === 401) {
+          reset();
+
           setError("Username or password incorrect - please try again");
           setLoginError(true);
         }
       });
     } catch (err) {
       console.log("error", err);
+      reset();
+
       setLoginError(true);
     }
   };
@@ -114,7 +134,12 @@ export default function LoginModal({ username }) {
                   control={control}
                   defaultValue=""
                   render={({ field }) => (
-                    <TextField {...field} label="Username" required />
+                    <TextField
+                      {...field}
+                      error={!!errors.username}
+                      helperText={errors.username?.message}
+                      label="Username"
+                    />
                   )}
                 />
               </Grid>
@@ -126,10 +151,11 @@ export default function LoginModal({ username }) {
                   render={({ field }) => (
                     <TextField
                       {...field}
+                      error={!!errors.password}
+                      helperText={errors.password?.message}
                       label="Password"
                       type="password"
                       autoComplete="current-password"
-                      required
                     />
                   )}
                 />
