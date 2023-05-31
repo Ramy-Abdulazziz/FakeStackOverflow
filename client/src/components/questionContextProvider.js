@@ -261,6 +261,22 @@ export default function QuestionContextProvider({ children }) {
       console.error(err);
     }
   };
+
+  const handleQuestionEdit = async (data) => {
+
+    const url = `http://localhost:8000/submit/question/${data.question}/edit`;
+
+    await axios
+      .put(url, data)
+      .then((response) => {
+        console.log(response);
+        fetchAllQuestions();
+        fetchAllUserQuestions();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
   return (
     <QuestionContext.Provider
       value={{
@@ -280,6 +296,7 @@ export default function QuestionContextProvider({ children }) {
         handleQuestionClick: handleQuestionClick,
         handleAdd: handleAddQuestion,
         handleAnswer: handleAddAnswer,
+        handleEdit: handleQuestionEdit,
       }}
     >
       {children}

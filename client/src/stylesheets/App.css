@@ -16,14 +16,6 @@ html {
 ::-webkit-scrollbar-thumb {
   background-color: grey;
   border-radius: 10px;
-
-}
-
-
-.questionDisplay {
-}
-
-.header {
 }
 
 .filterButtonGroup {
@@ -33,20 +25,14 @@ html {
   margin-bottom: 50px;
 }
 
-.qDisplayHome {
-}
-
-.pagination-home {
+.stickyButton {
+  position: fixed;
+  bottom: 20px;
+  right: 50px;
 }
 
 .numQuestions {
   color: grey;
-}
-
-.singleQuestionContainer {
-}
-
-.login-modal {
 }
 
 .login-signup {

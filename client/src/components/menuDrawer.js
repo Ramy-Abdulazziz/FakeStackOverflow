@@ -182,7 +182,7 @@ export default function MenuDrawer({ open, setOpen }) {
             </ListItemIcon>
           </ListItemButton>
         </ListItem>
-        {authContext.userRole === "user" ? userOptions() : guestOptions()}
+        {authContext.userRole === "guest" ?  guestOptions() : userOptions()}
         <Divider />
         {authContext.isLoggedIn === true ? allOptions() : null}
       </List>

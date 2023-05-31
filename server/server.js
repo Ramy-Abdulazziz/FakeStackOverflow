@@ -82,14 +82,10 @@ Routes for user authentication:
 */
 app.post("/login", async (req, res) => {
   try {
-    console.log("log in attempted");
     console.log(req.session.id);
 
     const username = req.body.username;
     const password = req.body.password;
-
-    console.log(username);
-    console.log(password);
 
     let user = await User.findOne({ user_name: username }).exec();
 
@@ -219,8 +215,6 @@ app.post("/sign-up", async (req, res) => {
   try {
     const userDetails = req.body;
 
-    console.log(userDetails);
-
     const existingUser = await User.findOne({ email: userDetails.email });
 
     if (existingUser) {
@@ -344,13 +338,92 @@ app.post("/submit/question", async (req, res) => {
   }
 });
 
-app.put("/submit/:id/answer", async (req, res) => {
+app.put("/submit/question/:id/edit", async (req, res) => {
+  console.log("receiving new question");
+  try {
+    const questionData = req.body;
+    const qid = req.params.id;
+    console.log(qid);
+    const user = await User.findById(questionData.user);
+    const existingTagsPromises = questionData.existingTags.map(
+      async (tagName) => {
+        const tag = await Tag.findOneAndUpdate(
+          { name: tagName },
+          { $push: { used_by: user._id } },
+          { new: true, useFindAndModify: false }
+        );
+        return tag; // return the tag here
+      }
+    );
+    const existingTags = await Promise.all(existingTagsPromises);
+
+    const newTagsPromises = questionData.newTags.map(async (tagName) => {
+      const tagDetails = {
+        name: tagName,
+        created_by: user._id,
+        used_by: [user._id],
+      };
+
+      const newTag = new Tag(tagDetails);
+      await newTag.save();
+      return newTag; // return the new tag here
+    });
+
+    const newTags = await Promise.all(newTagsPromises);
+
+    // Create an array of tag IDs
+    const tagIds = [...existingTags, ...newTags].map((tag) => tag._id);
+
+    const newQuestionDetails = {
+      title: questionData.title,
+      text: questionData.text,
+      summary: questionData.summary,
+      tags: tagIds,
+      asked_by: user._id,
+    };
+    const updatedQuestion = await Question.findByIdAndUpdate(
+      qid, // get the question id from the request parameters
+      {
+        $set: newQuestionDetails,
+      },
+      {
+        new: true, // option that asks mongoose to return the updated version of the document instead of the pre-updated one
+        runValidators: true, // option that asks mongoose to run the model's validators again, as the data is being updated
+      }
+    );
+    console.log(updatedQuestion);
+    res
+      .status(200)
+      .json({ message: "Question updated successfully", updatedQuestion });
+  } catch (error) {
+    console.error("Error in /submit/question:", error);
+    res.status(500).json({ message: "Error adding question", error });
+  }
+});
+
+app.post("/submit/:id/answer", async (req, res) => {
   console.log("receiving answer for question");
   try {
     const id = req.params.id;
-    const answerData = req.body;
+    const data = req.body;
+
+    const user = await User.findById(data.user);
+
+    const answerData = {
+      text: data.text,
+      ans_by: user._id,
+      ans_date_time: new Date(),
+      question: data.question,
+    };
+
     const newAnswer = new Answer(answerData);
     await newAnswer.save();
+
+    const userData = await User.findByIdAndUpdate(
+      data.user,
+      { $push: { answers: newAnswer._id } },
+      { new: true, useFindAndModify: false }
+    ).exec();
 
     const updatedQuestion = await Question.findByIdAndUpdate(
       id,
@@ -378,8 +451,7 @@ app.get("/questions/user/:id", async (req, res) => {
       .populate("tags")
       .populate("asked_by")
       .exec();
-    console.log(user_id);
-    console.log(userQuestions);
+
     res.status(200).json(userQuestions);
   } catch (err) {
     console.error(err);
@@ -390,7 +462,6 @@ app.get("/questions/user/:id", async (req, res) => {
 app.get("/questions/answered/:id", async (req, res) => {
   try {
     const userId = req.params.id;
-    console.log(userId);
     const user = await User.findById(userId)
       .populate({
         path: "answers",
@@ -419,7 +490,6 @@ app.get("/questions/answered/:id", async (req, res) => {
       });
     });
 
-    console.log(questions);
     res.status(200).json(questions);
   } catch (err) {
     console.log(err);
@@ -428,7 +498,6 @@ app.get("/questions/answered/:id", async (req, res) => {
 });
 app.get("/questions", async (req, res) => {
   console.log("Received request for questions");
-  console.log(req.sort);
   try {
     const tagName = req.query.tagName;
     const unanswered = req.query.unanswered === "true";
@@ -436,11 +505,8 @@ app.get("/questions", async (req, res) => {
     const id = req.query.id;
     let query = {};
 
-    console.log("sort", sort);
     if (tagName) {
-      console.log("Received tagName:", tagName); // Add this line
       const tag = await Tag.findOne({ name: tagName });
-      console.log("Found tag:", tag); // Add this line
 
       if (tag) {
         query.tags = { $in: [tag._id] };
@@ -455,7 +521,6 @@ app.get("/questions", async (req, res) => {
       query._id = id;
     }
 
-    console.log("Query object:", query); // Add this line
     let questions;
     if (id) {
       const question = await Question.findOne({ _id: id })
@@ -490,7 +555,6 @@ app.get("/questions", async (req, res) => {
         }
       });
     }
-    console.log("Sending questions:");
 
     if (unanswered) {
       questions.sort((a, b) => b.ask_date - a.ask_date);
@@ -512,7 +576,6 @@ app.get("/search", async (req, res) => {
   }
 
   let searchQuery;
-  console.log(searchText);
   switch (searchBy) {
     case "text_and_title":
       const regexTextAndTitle = new RegExp(searchText, "i");
@@ -522,7 +585,6 @@ app.get("/search", async (req, res) => {
       break;
     case "tags":
       const tag = await Tag.findOne({ name: searchText });
-      console.log("searching for " + tag.name);
       searchQuery = { tags: { $in: [tag._id] } };
       break;
     case "links":
@@ -562,7 +624,6 @@ app.get("/search", async (req, res) => {
 });
 
 app.get("/questions/:id/answers", async (req, res) => {
-  console.log("received request for answers");
   try {
     const questionId = req.params.id;
     const question = await Question.findById(questionId).populate("answers");
@@ -574,8 +635,6 @@ app.get("/questions/:id/answers", async (req, res) => {
 });
 
 app.get("/question/:id/comments", async (req, res) => {
-  console.log("received request for comments");
-
   try {
     const id = req.params.id;
     const comments = await Comment.find({ parent: { $in: id } })
@@ -585,7 +644,6 @@ app.get("/question/:id/comments", async (req, res) => {
     res
       .status(200)
       .json(comments.sort((a, b) => b.date_created - a.date_created));
-    console.log(comments);
   } catch (err) {
     res.status(500).json({ message: "unable to load comments" });
     console.log(err);
@@ -602,18 +660,13 @@ app.get("/tags", async (req, res) => {
 });
 
 app.get("/tags/:id/name", async (req, res) => {
-  console.log("Received request for tagNames");
   try {
-    console.log("Received request for tagNames"); // Add this line to log the request
-
     const tagId = req.params.id;
-    console.log(tagId);
     const tag = await Tag.findById(tagId);
 
     if (!tag) {
       return res.status(404).json({ message: "Tag not found" });
     }
-    console.log("SENDING TAG NAMES:" + tag.name);
     res.send(tag.name);
   } catch (error) {
     res.status(500).json({ message: "Error fetching tag name", error });
@@ -655,8 +708,6 @@ Routes for Question changes
 
 app.put("/question/:id/upvote", async (req, res) => {
   try {
-    console.log("updating ");
-
     const questionId = req.params.id;
     const updatedQuestion = await Question.findByIdAndUpdate(
       questionId,
@@ -676,8 +727,6 @@ app.put("/question/:id/upvote", async (req, res) => {
 
 app.put("/question/:id/downvote", async (req, res) => {
   try {
-    console.log("updating ");
-
     const questionId = req.params.id;
     const updatedQuestion = await Question.findByIdAndUpdate(
       questionId,
@@ -697,7 +746,6 @@ app.put("/question/:id/downvote", async (req, res) => {
 
 app.put("/questions/:id/views", async (req, res) => {
   try {
-    console.log("received request to inc question view ");
     const questionId = req.params.id;
     const updatedQuestion = await Question.findByIdAndUpdate(
       questionId,
@@ -722,12 +770,10 @@ app.put("/questions/:id/views", async (req, res) => {
 app.post("/comment", async (req, res) => {
   try {
     const commentDetails = req.body;
-    console.log(req.body);
     let parent;
     let newComments;
 
     const user = await User.findById(commentDetails.userId);
-    console.log(user);
     if (commentDetails.parentType === "Question") {
       parent = await Question.findById(commentDetails.parentId);
     }
@@ -736,8 +782,6 @@ app.post("/comment", async (req, res) => {
       parent = await Answer.findById(commentDetails.parentId);
     }
 
-    console.log(parent._id);
-    console.log(user._id);
     const newComment = new Comment({
       text: commentDetails.text,
       created_by: user._id,
@@ -786,7 +830,6 @@ app.put("/comment/:id/upvote", async (req, res) => {
       .populate("created_by")
       .exec();
 
-    console.log(updatedComment);
     if (!updatedComment) {
       res.status(404).send("Comment not found");
       return;
@@ -812,7 +855,6 @@ app.get("/answer/:id", async (req, res) => {
       .populate("ans_by")
       .exec();
 
-    console.log(answer);
     if (answer) {
       res.status(200).json(answer);
     } else {
@@ -833,7 +875,6 @@ app.get("/answer/:id/comments", async (req, res) => {
     res
       .status(200)
       .json(comments.sort((a, b) => b.date_created - a.date_created));
-    console.log(comments);
   } catch (err) {
     res.status(500).json({ message: "system error" });
   }
@@ -851,7 +892,6 @@ app.put("/answer/:id/upvote", async (req, res) => {
       .populate("ans_by")
       .exec();
 
-    console.log(updatedAnswer);
     if (!updatedAnswer) {
       res.status(404).send("Comment not found");
       return;

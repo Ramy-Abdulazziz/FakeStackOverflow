@@ -26,6 +26,8 @@ import UserProfile from "./components/userProfile";
 import UserAnsweredPage from "./components/userAnswersPage";
 import UserTagsPage from "./components/userTagsPage";
 import AddQuestionForm from "./components/addQuestionForm";
+import AddAnswer from "./components/addAnswerForm";
+import EditQuestionForm from "./components/editQuestionForm";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -56,6 +58,14 @@ function App() {
                   />
                   <Route path="/user/:id/tags" element={<UserTagsPage />} />
                   <Route path="/question/add" element={<AddQuestionForm />} />
+                  <Route
+                    path="/question/:id/answer/add"
+                    element={<AddAnswer />}
+                  />
+                  <Route
+                    path="/question/user/edit/:id"
+                    element={<EditQuestionForm />}
+                  />
                 </Routes>
               </Container>
             </Box>
