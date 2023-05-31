@@ -24,7 +24,11 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
 async function tagCreate(name) {
-  const tag = new Tag({ name: name });
+  const details = {
+    name: name,
+    used_by: [],
+  };
+  const tag = new Tag(details);
   return tag.save();
 }
 
@@ -230,15 +234,20 @@ const populate = async () => {
   u1.answers.push(ans1._id);
   u2.answers.push(ans2._id);
 
-  t1.used_by.push = u1;
-  t1.used_by.push = u2;
-  t1.used_by.push = u3;
+  t1.used_by.push(u1._id);
+  t1.used_by.push(u2._id);
+  t1.used_by.push(u3._id);
 
-  t2.used_by.push = u2;
-  t2.used_by.push = u3;
+  t2.used_by.push(u2._id);
+  t2.used_by.push(u3._id);
 
-  t3.used_by.push = u2;
-  t3.used_by.push = u3;
+  t3.used_by.push(u2._id);
+  t3.used_by.push(u3._id);
+
+  await t1.save();
+  await t2.save();
+  await t3.save();
+  await t4.save();
 
   t2.created_by = u2._id;
   t3.created_by = u3._id;
@@ -327,13 +336,15 @@ const populate = async () => {
   await ans1.save();
   await q2.save();
 
-  console.log(`admin details are user: ${adminDetails[0]}, pass: ${adminDetails[1]}`);
+  console.log(
+    `admin details are user: ${adminDetails[0]}, pass: ${adminDetails[1]}`
+  );
 };
 
 populate()
   .then(() => {
     console.log("Done populating data");
-    mongoose.connection.close();  // close the connection here
+    mongoose.connection.close(); // close the connection here
   })
   .catch((err) => {
     console.log("ERROR: " + err);
