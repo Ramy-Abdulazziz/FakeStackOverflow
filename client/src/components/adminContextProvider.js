@@ -83,6 +83,11 @@ export default function AdminContextProvider({ children }) {
     }
   };
 
+  const exitMenu = () =>{
+
+    // setShowAdminOptions(false); 
+  }
+
   return (
     <AdminContext.Provider
       value={{
@@ -93,6 +98,7 @@ export default function AdminContextProvider({ children }) {
         showAdminOption: showAdminOption,
         loadingQuestions: loadingQuestions,
         userQuestions: userQuestions,
+        exitMenu: exitMenu(),
         refreshUser: refreshUser,
         onUserClick: onUserClick,
         deleteUser: deleteUser,

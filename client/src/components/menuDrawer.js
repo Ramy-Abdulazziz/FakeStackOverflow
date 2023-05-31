@@ -78,12 +78,12 @@ export default function MenuDrawer({ open, setOpen }) {
   };
 
   const navigateAdminUserQuestions = async () => {
-    const userId = adminContext.handlingUserID; 
+    const userId = adminContext.handlingUserID;
     navigate(`/admin/user/${userId}/questions`);
   };
 
   const navigateAdminUserTags = async () => {
-    const userId = adminContext.handlingUserID; 
+    const userId = adminContext.handlingUserID;
     navigate(`/admin/user/${userId}/tags`);
   };
 
@@ -97,9 +97,22 @@ export default function MenuDrawer({ open, setOpen }) {
     navigate(`/user/${userId}/questions`);
   };
 
+  const exitAdmin = () => {
+
+    adminContext.exitMenu(); 
+  }
+
   const adminOptions = () => (
     <List>
       <Divider />
+      <ListItem disablePadding>
+        <ListItemButton onClick={exitAdmin}>
+          <ListItemIcon>
+            <ArrowBackIosNewIcon />
+          </ListItemIcon>
+          <ListItemText primary={`Exit Admin Menu`} />
+        </ListItemButton>
+      </ListItem>
       <ListItem disablePadding>
         <ListItemButton onClick={navigateAdminUserQuestions}>
           <ListItemIcon>
