@@ -67,9 +67,7 @@ const validateQuestionTags = (questionTags) => {
 // Your form component
 const QuestionForm = () => {
   const validationSchema = Yup.object().shape({
-    title: Yup.string()
-      .max(50, "Maximum 50 characters allowed")
-      .required(),
+    title: Yup.string().max(50, "Maximum 50 characters allowed").required(),
     summary: Yup.string()
       .max(140, "Maximum 140 characters allowed")
       .required("Summary is required"),
@@ -210,7 +208,10 @@ const QuestionForm = () => {
     );
   };
 
-  const handleDelete = async () => {};
+  const handleDelete = async () => {
+    questionContext.handleDelete(id);
+    navigate("/home");
+  };
   return loading ? (
     <Skeleton variant="square" />
   ) : (
@@ -284,11 +285,7 @@ const QuestionForm = () => {
                     labelId="existing-tags-label"
                     onChange={handleChange}
                     defaultValue={questionDetails.tags.map((tag) => tag.name)}
-                    value={
-                      userTags === []
-                        ? userTags
-                        : questionDetails.tags.map((tag) => tag.name)
-                    }
+                    value={userTags}
                   >
                     {tags.map((t) => (
                       <MenuItem key={t.name} value={t.name}>

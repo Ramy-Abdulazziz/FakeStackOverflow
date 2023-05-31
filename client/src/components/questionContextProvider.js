@@ -15,6 +15,8 @@ export default function QuestionContextProvider({ children }) {
 
   useEffect(() => {
     fetchAllQuestions();
+    fetchAllUserQuestions();
+    fetchAllUserAnsweredQuestions();
   }, []);
   const handleSort = async (params) => {
     try {
@@ -254,7 +256,10 @@ export default function QuestionContextProvider({ children }) {
 
   const handleAddAnswer = async (data) => {
     try {
-      await axios.post(`http://localhost:8000/submit/${data.question}/answer`, data);
+      await axios.post(
+        `http://localhost:8000/submit/${data.question}/answer`,
+        data
+      );
       fetchAllQuestions();
       fetchAllUserQuestions();
     } catch (err) {
@@ -263,7 +268,6 @@ export default function QuestionContextProvider({ children }) {
   };
 
   const handleQuestionEdit = async (data) => {
-
     const url = `http://localhost:8000/submit/question/${data.question}/edit`;
 
     await axios
@@ -276,6 +280,20 @@ export default function QuestionContextProvider({ children }) {
       .catch((error) => {
         console.log(error);
       });
+  };
+
+  const handleDelete = async(id) => {
+
+    try{
+
+      await axios.delete(`http://localhost:8000/question/${id}/delete`)
+      fetchAllQuestions(); 
+      fetchAllUserAnsweredQuestions(); 
+      fetchAllUserQuestions(); 
+    }catch(err){
+
+      console.error(err); 
+    }
   }
   return (
     <QuestionContext.Provider
@@ -297,6 +315,7 @@ export default function QuestionContextProvider({ children }) {
         handleAdd: handleAddQuestion,
         handleAnswer: handleAddAnswer,
         handleEdit: handleQuestionEdit,
+        handleDelete: handleDelete,
       }}
     >
       {children}

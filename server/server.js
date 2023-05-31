@@ -401,6 +401,42 @@ app.put("/submit/question/:id/edit", async (req, res) => {
   }
 });
 
+app.delete("/question/:id/delete", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find the question
+    const question = await Question.findById(id);
+
+    // Delete all answers and their comments
+    for (let answerId of question.answers) {
+      const answer = await Answer.findById(answerId);
+
+      // Delete all comments of each answer
+      for (let commentId of answer.comments) {
+        await Comment.findByIdAndRemove(commentId);
+      }
+
+      await Answer.findByIdAndRemove(answerId);
+    }
+
+    // Delete all comments of the question
+    for (let commentId of question.comments) {
+      await Comment.findByIdAndRemove(commentId);
+    }
+
+    // Finally, delete the question itself
+    await Question.findByIdAndRemove(id);
+
+    res
+      .status(200)
+      .json({ message: "Question and all related data deleted successfully" });
+  } catch (error) {
+    console.error("Error in /question/:id/delete:", error);
+    res.status(500).json({ message: "Error deleting question", error });
+  }
+});
+
 app.post("/submit/:id/answer", async (req, res) => {
   console.log("receiving answer for question");
   try {
