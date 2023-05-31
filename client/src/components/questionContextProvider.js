@@ -74,6 +74,11 @@ export default function QuestionContextProvider({ children }) {
   const fetchAllUserAnsweredQuestions = async () => {
     try {
       setLoadingQuestions(true);
+      const questions = await axios.get(
+        `http://localhost:8000/questions/answered/${authContext.userId}`
+      );
+
+      setUserAnswered(questions.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -300,6 +305,7 @@ export default function QuestionContextProvider({ children }) {
         displayedQuestions: displayedQuestions,
         loadingQuestions: loadingQuestions,
         detailedQuestion: detailedQuestion,
+        userAnswered: userAnswered,
         fetchAll: fetchAllQuestions,
         fetchUser: fetchAllUserQuestions,
         onSort: handleSort,

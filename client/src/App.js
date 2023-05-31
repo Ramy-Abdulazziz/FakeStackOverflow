@@ -28,6 +28,7 @@ import UserTagsPage from "./components/userTagsPage";
 import AddQuestionForm from "./components/addQuestionForm";
 import AddAnswer from "./components/addAnswerForm";
 import EditQuestionForm from "./components/editQuestionForm";
+import DetailedQuestionEditPage from "./components/detailedQuestionEdit";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -65,6 +66,10 @@ function App() {
                   <Route
                     path="/question/user/edit/:id"
                     element={<EditQuestionForm />}
+                  />
+                  <Route
+                    path="/user/:id/answers"
+                    element={<DetailedQuestionEditPage />}
                   />
                 </Routes>
               </Container>

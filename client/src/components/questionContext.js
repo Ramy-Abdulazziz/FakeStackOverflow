@@ -5,6 +5,7 @@ const QuestionContext = createContext({
   allQuestions: [],
   displayedQuestions: [],
   detailedQuestion: [],
+  userAnswered: [],
   fetchAll: () => {},
   fetchUser: () => {},
   handleAdd: () => {},

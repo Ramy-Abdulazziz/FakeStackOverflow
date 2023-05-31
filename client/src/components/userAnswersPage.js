@@ -67,7 +67,11 @@ export default function UserAnsweredPage() {
           <QuestionDisplay />
         </Skeleton>
       ) : (
-        <QuestionDisplay cls={"qDisplayHome"} questions={currentQuestions} />
+        <QuestionDisplay
+          cls={"qDisplayHome"}
+          questions={currentQuestions}
+          userPage={true}
+        />
       )}
     </Container>
   );

@@ -10,10 +10,13 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
+import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
+
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import { useLocation } from "react-router-dom";
-
+import ModeEditIcon from "@mui/icons-material/ModeEdit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -220,6 +223,11 @@ function SingleAnswer({ answer }) {
   const [answr, setAnswer] = useState(answer);
   const authContext = useContext(AuthContext);
   const [showComments, setShowComments] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newAnswer, setNewAnswer] = useState("");
 
   useEffect(() => {
     const getAnswerDetails = async () => {
@@ -239,6 +247,10 @@ function SingleAnswer({ answer }) {
 
   const handleShowAComments = async () => {
     setShowComments(!showComments);
+  };
+
+  const handleEditClick = async () => {
+    setIsEditing(true);
   };
 
   const handleUpvote = async () => {
@@ -263,87 +275,201 @@ function SingleAnswer({ answer }) {
     }
   };
 
+  const handleNameChange = (event) => {
+    setNewAnswer(event.target.value);
+  };
+
+  const emptyCheck = (content) => {
+    console.log(content.replace(new RegExp("\\s+", "g"), ""));
+
+    return content.replace(new RegExp("\\s+", "g"), "") === "";
+  };
+
+  const validateLinks = (bodyText) => {
+    let linkRegex = new RegExp("\\[([^\\s\\]]+)\\]\\((.*?)\\)", "g");
+    let valid = true;
+    let linkAttempt = bodyText.match(linkRegex);
+    let validLinkRegex = new RegExp(
+      "\\[((.|\\s)*\\S(.|\\s)*?)\\]\\((https?:\\/\\/\\S+)\\)"
+    );
+
+    if (linkAttempt != null) {
+      linkAttempt.forEach((link) => {
+        if (!validLinkRegex.test(link)) {
+          valid = false;
+        }
+      });
+    }
+
+    console.log(valid);
+    return valid;
+  };
+
+  const validateText = (questionText) => {
+    return !emptyCheck(questionText) && validateLinks(questionText);
+  };
+
+  // Add a function to handle editing
+  const handleEdit = async () => {
+    console.log(newAnswer);
+    if (validateText(newAnswer) === false) {
+      setErrorMessage("Please provide valid answer text");
+      setOpen(true);
+      return;
+    }
+    try {
+      const updatedAnswer = await axios.put(
+        `http://localhost:8000/answer/${answr._id}`,
+        { text: newAnswer }
+      );
+      setAnswer(updatedAnswer.data.answer);
+      setSuccess("Successfully updated answer");
+      setIsEditing(false);
+      setOpenSuccess(true);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage("Error editing question");
+      setOpen(true);
+      setIsEditing(false);
+    }
+  };
+
+  // Add a function to handle deleting
+  const handleDelete = async () => {
+    try {
+      const confirmation = window.confirm(
+        "Are you sure you want to delete this answer?"
+      );
+
+      if (!confirmation) {
+        return;
+      }
+
+      const response = await axios.delete(
+        `http://localhost:8000/answer/${answr._id}`
+      );
+
+      if (response.status === 200) {
+        setSuccess("Successfully deleted question");
+        setOpenSuccess(true);
+        setDeleted(true);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("There was an error deleting the answer");
+    }
+  };
+
   return (
     <>
-      <Paper elevation={3} sx={{ borderRadius: 2, minHeight: 100 }}>
-        <Container sx={{ maxWidth: 1800 }}>
-          <Grid
-            container
-            spacing={2}
-            direction={"row"}
-            justifyContent={"space-evenly"}
-          >
-            {" "}
-            <Grid item>
+      {!deleted && (
+        <>
+          <Paper elevation={3} sx={{ borderRadius: 2, minHeight: 100 }}>
+            <Container sx={{ maxWidth: 1800 }}>
               <Grid
                 container
                 spacing={2}
-                direction="column"
-                justifyContent={"flex-start"}
-                flexDirection={"column"}
+                direction={"row"}
+                justifyContent={"space-evenly"}
               >
                 {" "}
                 <Grid item>
-                  <Button onClick={handleUpvote}>
-                    <ThumbUpIcon />
-                  </Button>
-                </Grid>
-                <Grid item sx={{ ml: 3, mb: 0 }}>
-                  <Typography>{answr.upvotes}</Typography>
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid
-              item
-              sx={{
-                overflowWrap: "break-word",
-                wordWrap: "break-word",
-              }}
-            >
-              <Container sx={{ minWidth: 300 }}>
-                <Typography variant="body1" sx={{}}>
-                  {answr.text}
-                </Typography>
-              </Container>
-            </Grid>
-            <Grid item>
-              <Card sx={{ minWidth: 230, mb: 2 }}>
-                <CardContent>
-                  <Grid container spacing={2} direction="column">
+                  <Grid
+                    container
+                    spacing={2}
+                    direction="column"
+                    justifyContent={"flex-start"}
+                    flexDirection={"column"}
+                  >
+                    {" "}
                     <Grid item>
-                      <Typography variant="subtitle2">
-                        {FormatDateText.formatDateText(answr.ans_date_time)}
-                      </Typography>
+                      <Button onClick={handleUpvote}>
+                        <ThumbUpIcon />
+                      </Button>
                     </Grid>
-                    <Grid item>
-                      <Grid container spacing={2} direciton="row">
-                        <Grid item>
-                          <PersonIcon fontSize="medium" />
-                        </Grid>
-                        <Grid item sx={{ mt: 0.5 }}>
-                          <Typography variant="subtitle2">
-                            {answr.ans_by.user_name}
-                          </Typography>
-                        </Grid>
-                      </Grid>
+                    <Grid item sx={{ ml: 3, mb: 0 }}>
+                      <Typography>{answr.upvotes}</Typography>
                     </Grid>
                   </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Container>
-      </Paper>
-      <Button
-        onClick={handleShowAComments}
-        sx={{ ml: "auto", mr: "auto", width: "100%" }}
-      >
-        {showComments ? (
-          <ArrowDropUpIcon />
-        ) : (
-          <ArrowDropDownCircleIcon fontSize="large" />
-        )}
-      </Button>
+                </Grid>
+                <Grid
+                  item
+                  sx={{
+                    overflowWrap: "break-word",
+                    wordWrap: "break-word",
+                  }}
+                >
+                  <Container sx={{ minWidth: 300 }}>
+                    {isEditing ? (
+                      <TextField
+                        defaultValue={answr.text}
+                        onChange={handleNameChange}
+                      />
+                    ) : (
+                      <Typography variant="body1" sx={{}}>
+                        {answr.text}
+                      </Typography>
+                    )}
+                  </Container>
+                </Grid>
+                <Grid item>
+                  <Card sx={{ minWidth: 230, mb: 2 }}>
+                    <CardContent>
+                      <Grid container spacing={2} direction="column">
+                        <Grid item>
+                          <Typography variant="subtitle2">
+                            {FormatDateText.formatDateText(answr.ans_date_time)}
+                          </Typography>
+                        </Grid>
+                        <Grid item>
+                          <Grid container spacing={2} direciton="row">
+                            <Grid item>
+                              <PersonIcon fontSize="medium" />
+                            </Grid>
+                            <Grid item sx={{ mt: 0.5 }}>
+                              <Typography variant="subtitle2">
+                                {answr.ans_by.user_name}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item>
+                  {answr.ans_by._id === authContext.user._id && (
+                    <Grid container spacing={2} direction="column">
+                      <Grid item>
+                        <Button
+                          onClick={isEditing ? handleEdit : handleEditClick}
+                        >
+                          {isEditing ? <DownloadDoneIcon /> : <ModeEditIcon />}
+                        </Button>
+                      </Grid>
+                      <Grid item>
+                        <Button onClick={handleDelete}>
+                          <DeleteIcon />
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  )}
+                </Grid>
+              </Grid>
+            </Container>
+          </Paper>
+          <Button
+            onClick={handleShowAComments}
+            sx={{ ml: "auto", mr: "auto", width: "100%" }}
+          >
+            {showComments ? (
+              <ArrowDropUpIcon />
+            ) : (
+              <ArrowDropDownCircleIcon fontSize="large" />
+            )}
+          </Button>
+        </>
+      )}
       {showComments ? <AnswerComments answer={answer} /> : ""}
       <Snackbar
         open={open}
@@ -356,6 +482,19 @@ function SingleAnswer({ answer }) {
           sx={{ width: "100%" }}
         >
           {errorMessage}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={6000}
+        onClose={() => setOpen(false)}
+      >
+        <Alert
+          onClose={() => setOpenSuccess(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {success}
         </Alert>
       </Snackbar>
     </>
@@ -993,7 +1132,7 @@ function QuestionDetail({ question }) {
     </Container>
   );
 }
-export default function DetailedQuestionPage() {
+export default function DetailedQuestionEditPage() {
   const questionContext = useContext(QuestionContext);
   const authContext = useContext(AuthContext);
   const [question, setQuestion] = useState(null);
@@ -1022,9 +1161,20 @@ export default function DetailedQuestionPage() {
         console.log(getQuestionDetails);
         setQuestion(getQuestionDetails.data[0]);
         setAnswers(
-          getQuestionDetails.data[0].answers.sort(
-            (a, b) => new Date(b.ans_date_time) - new Date(a.ans_date_time)
-          )
+          getQuestionDetails.data[0].answers.sort((a, b) => {
+            if (
+              a.ans_by.toString() === authContext.userId &&
+              b.ans_by.toString() === authContext.userId
+            ) {
+              return b.ans_date_time - a.ans_date_time; // descending order by date for user's answers
+            } else if (a.ans_by.toString() === authContext.userId) {
+              return -1;
+            } else if (b.ans_by.toString() === authContext.userId) {
+              return 1;
+            } else {
+              return b.ans_date_time - a.ans_date_time; // descending order by date for other users' answers
+            }
+          })
         );
         setLoading(false);
       } catch (err) {

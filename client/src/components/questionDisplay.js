@@ -18,8 +18,9 @@ import FormatDateText from "../dateTextUtils";
 import { useEffect } from "react";
 import axios from "axios";
 import QuestionContext from "./questionContext";
+import AuthContext from "./authContext";
 
-function SingleQuestionContainer({ question }) {
+function SingleQuestionContainer({ question, userPage }) {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
   const questionContext = useContext(QuestionContext);
 
@@ -75,7 +76,16 @@ function SingleQuestionContainer({ question }) {
                     wordWrap: "break-word",
                   }}
                 >
-                  <Link onClick={() => questionContext.handleQuestionClick(question._id)} to={`/answers/${question._id}`}>
+                  <Link
+                    onClick={() =>
+                      questionContext.handleQuestionClick(question._id)
+                    }
+                    to={
+                      userPage
+                        ? `/user/${question._id}/answers`
+                        : `/answers/${question._id}`
+                    }
+                  >
                     <Typography variant="h6">{question.title}</Typography>
                   </Link>
                 </Grid>
@@ -184,7 +194,7 @@ function SingleQuestionContainer({ question }) {
   );
 }
 
-export default function QuestionDisplay({ questions }) {
+export default function QuestionDisplay({ questions, userPage = false }) {
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 5;
 
@@ -229,7 +239,11 @@ export default function QuestionDisplay({ questions }) {
             sx={{ borderRadius: 2, paddingTop: 2, paddingBottom: 2 }}
           >
             {currentQuestions.map((q, index) => (
-              <SingleQuestionContainer key={index} question={q} />
+              <SingleQuestionContainer
+                key={index}
+                question={q}
+                userPage={userPage}
+              />
             ))}
           </Paper>
         </Container>

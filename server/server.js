@@ -418,6 +418,12 @@ app.delete("/question/:id/delete", async (req, res) => {
 
       // Delete all comments of each answer
       for (let commentId of answer.comments) {
+        // Remove comment id from user's comments array
+        if (user) {
+          user.comments.pull(commentId);
+          await user.save();
+        }
+
         await Comment.findByIdAndRemove(commentId);
       }
 
@@ -426,6 +432,12 @@ app.delete("/question/:id/delete", async (req, res) => {
 
     // Delete all comments of the question
     for (let commentId of question.comments) {
+      // Remove comment id from user's comments array
+      if (user) {
+        user.comments.pull(commentId);
+        await user.save();
+      }
+
       await Comment.findByIdAndRemove(commentId);
     }
 
@@ -541,12 +553,14 @@ app.get("/questions/answered/:id", async (req, res) => {
     questions.forEach((question) => {
       // Sort the answers array so that the user's answer is first and the rest are sorted by date
       question.answers.sort((a, b) => {
-        if (a.ans_by.toString() === userId) {
+        if (a.ans_by.toString() === userId && b.ans_by.toString() === userId) {
+          return b.ans_date_time - a.ans_date_time; // descending order by date for user's answers
+        } else if (a.ans_by.toString() === userId) {
           return -1;
         } else if (b.ans_by.toString() === userId) {
           return 1;
         } else {
-          return b.ans_date_time - a.ans_date_time; // descending order by date
+          return b.ans_date_time - a.ans_date_time; // descending order by date for other users' answers
         }
       });
     });
@@ -1043,6 +1057,83 @@ app.put("/answer/:id/upvote", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
+
+app.delete("/answer/:id", async (req, res) => {
+  try {
+    // Fetch the answer by its id
+    let answer = await Answer.findById(req.params.id);
+
+    // Check if answer exists
+    if (!answer) {
+      return res.status(404).json({ message: "Answer not found" });
+    }
+
+    // Fetch the associated user
+    let user = await User.findById(answer.ans_by);
+
+    // Delete associated comments
+    for (let commentId of answer.comments) {
+      // Remove comment id from user's comments array
+      if (user) {
+        user.comments.pull(commentId);
+        await user.save();
+      }
+      await Comment.findByIdAndRemove(commentId);
+    }
+
+    // Fetch the associated question
+    let question = await Question.findOne({ answers: req.params.id });
+
+    // Remove answer id from question's answers array
+    if (question) {
+      question.answers.pull(req.params.id);
+      await question.save();
+    }
+
+    // Remove answer id from user's answers array
+    if (user) {
+      user.answers.pull(req.params.id);
+      await user.save();
+    }
+
+    // Delete the answer itself
+    await Answer.findByIdAndRemove(req.params.id);
+
+    // Send response
+    res.status(200).json({ message: "Answer and associated comments deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/answer/:id", async (req, res) => {
+  try {
+    // Fetch the answer by its id
+    let answer = await Answer.findById(req.params.id);
+
+    // Check if answer exists
+    if (!answer) {
+      return res.status(404).json({ message: "Answer not found" });
+    }
+
+    // Update answer text
+    answer = await Answer.findByIdAndUpdate(req.params.id, {
+      text: req.body.text,
+    });
+    await answer.save();
+
+    // Populate the 'ans_by' field
+    answer = await Answer.findById(req.params.id).populate("ans_by");
+
+    // Send response
+    res.status(200).json({ message: "Answer updated", answer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
