@@ -123,21 +123,25 @@ export default function HomePage() {
           <QuestionDisplay cls={"qDisplayHome"} questions={currentQuestions} />
         )}
       </Container>
-      <Box sx={{ mt: 5 }}>
+      <Box className="stickyButton" sx={{ mt: 5 }}>
         <Grid container justifyContent={"flex-end"}>
           <Grid item>
-            <Fab onClick={handleAddNewClick} color="primary">
+            <Fab
+              onClick={handleAddNewClick}
+              className="stickyButton"
+              color="primary"
+            >
               <AddIcon />
             </Fab>
           </Grid>
         </Grid>
-
-        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-          <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-            You cannot add a new question as a guest - please log in
-          </Alert>
-        </Snackbar>
       </Box>
+
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+          You cannot add a new question as a guest - please log in
+        </Alert>
+      </Snackbar>
     </>
   );
 }

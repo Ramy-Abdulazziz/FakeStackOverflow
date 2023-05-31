@@ -17,6 +17,7 @@ const QuestionContext = createContext({
   handleUpvote: () => {},
   handleDownvote: () => {},
   handleQuestionClick: () => {},
+  handleAsnwer: () => {},
 });
 
 export default QuestionContext;

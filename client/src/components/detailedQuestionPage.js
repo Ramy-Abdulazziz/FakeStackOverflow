@@ -10,7 +10,9 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
-import Fab from '@mui/material/Fab';
+import Fab from "@mui/material/Fab";
+import AddIcon from "@mui/icons-material/Add";
+import { useLocation } from "react-router-dom";
 
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -396,7 +398,7 @@ function Answers({ answers }) {
   };
 
   return (
-    <Box sx={{ height: 600, overflow: "auto" }}>
+    <Box sx={{ height: 400, overflow: "auto" }}>
       <Paper sx={{ mt: 5, paddingTop: 5, paddingBottom: 5 }}>
         <Container>
           {currentAnswers.map((a) => (
@@ -812,7 +814,13 @@ function QuestionHeader({ question }) {
     <>
       <Paper elevation={3} sx={{ borderRadius: 2, minHeight: 300 }}>
         <Container sx={{ maxWidth: 1800 }}>
-          <Grid container justifyContent={"left"} spacing={2} direction={"row"} sx={{minWidth:1300}}>
+          <Grid
+            container
+            justifyContent={"left"}
+            spacing={2}
+            direction={"row"}
+            sx={{ minWidth: 1300 }}
+          >
             <Grid item sx={{ maxwidth: 10 }}>
               <Grid
                 container
@@ -944,7 +952,7 @@ function QuestionHeader({ question }) {
                                 </Grid>
 
                                 <Grid item>
-                                  <Typography variant='h6'>
+                                  <Typography variant="h6">
                                     {question.answers.length}
                                   </Typography>
                                 </Grid>
@@ -986,10 +994,15 @@ function QuestionDetail({ question }) {
 }
 export default function DetailedQuestionPage() {
   const questionContext = useContext(QuestionContext);
+  const authContext = useContext(AuthContext);
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showQComments, setShowQComments] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const { id } = useParams();
 
@@ -1004,9 +1017,14 @@ export default function DetailedQuestionPage() {
         const getQuestionDetails = await axios.get(
           `http://localhost:8000/questions?id=${id}`
         );
-
+        console.log("getting question details" + getQuestionDetails);
+        console.log(getQuestionDetails);
         setQuestion(getQuestionDetails.data[0]);
-        setAnswers(getQuestionDetails.data[0].answers);
+        setAnswers(
+          getQuestionDetails.data[0].answers.sort(
+            (a, b) => new Date(b.ans_date_time) - new Date(a.ans_date_time)
+          )
+        );
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -1014,33 +1032,65 @@ export default function DetailedQuestionPage() {
       }
     };
     getQuestionDetails();
-  }, [id]);
+  }, [questionContext.allQuestions]);
 
+ 
+  const handleAddNewClick = async () => {
+    if (authContext.userRole === "guest") {
+      setOpen(true);
+    } else {
+      navigate(`/question/${id}/answer/add`);
+    }
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
   return (
-    <Container sx={{ mt: 20, maxWidth: 1800 }}>
-      {" "}
-      {loading ? (
-        <Skeleton variant="box">{/* <QuestionDetail /> */}</Skeleton>
-      ) : (
-        <>
-          <Paper>
-            <QuestionDetail question={question} />
-            <Button
-              onClick={handleShowQComments}
-              sx={{ ml: "auto", mr: "auto", width: "100%" }}
-            >
-              {showQComments ? (
-                <ArrowDropUpIcon />
-              ) : (
-                <ArrowDropDownCircleIcon fontSize="large" />
-              )}
-            </Button>
-            {showQComments ? <QuestionComments question={question} /> : ""}
-          </Paper>
+    <>
+      <Container sx={{ mt: 10, maxWidth: 1800 }}>
+        {" "}
+        {loading ? (
+          <Skeleton variant="box">{/* <QuestionDetail /> */}</Skeleton>
+        ) : (
+          <>
+            <Paper>
+              <QuestionDetail question={question} />
+              <Button
+                onClick={handleShowQComments}
+                sx={{ ml: "auto", mr: "auto", width: "100%" }}
+              >
+                {showQComments ? (
+                  <ArrowDropUpIcon />
+                ) : (
+                  <ArrowDropDownCircleIcon fontSize="large" />
+                )}
+              </Button>
+              {showQComments ? <QuestionComments question={question} /> : ""}
+            </Paper>
 
-          <Answers answers={answers} />
-        </>
-      )}
-    </Container>
+            <Answers answers={answers} />
+          </>
+        )}
+      </Container>
+      <Box className="stickyButton" sx={{ mt: 5 }}>
+        <Grid container justifyContent={"flex-end"}>
+          <Grid item>
+            <Fab
+              onClick={handleAddNewClick}
+              className="stickyButton"
+              color="primary"
+            >
+              <AddIcon />
+            </Fab>
+          </Grid>
+        </Grid>
+      </Box>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+          You cannot add a new answser as a guest - please log in
+        </Alert>
+      </Snackbar>
+    </>
   );
 }

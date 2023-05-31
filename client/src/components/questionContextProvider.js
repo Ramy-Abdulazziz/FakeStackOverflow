@@ -251,6 +251,16 @@ export default function QuestionContextProvider({ children }) {
         console.log(error);
       });
   };
+
+  const handleAddAnswer = async (data) => {
+    try {
+      await axios.post(`http://localhost:8000/submit/${data.question}/answer`, data);
+      fetchAllQuestions();
+      fetchAllUserQuestions();
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <QuestionContext.Provider
       value={{
@@ -269,6 +279,7 @@ export default function QuestionContextProvider({ children }) {
         handleDownvote: handleDownVote,
         handleQuestionClick: handleQuestionClick,
         handleAdd: handleAddQuestion,
+        handleAnswer: handleAddAnswer,
       }}
     >
       {children}

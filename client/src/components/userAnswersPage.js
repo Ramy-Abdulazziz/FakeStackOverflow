@@ -26,8 +26,14 @@ export default function UserAnsweredPage() {
         const questions = await axios.get(
           `http://localhost:8000/questions/answered/${authContext.userId}`
         );
+        let uniqueQuestionsMap = new Map();
 
-        setCurrentQuestions(questions.data);
+        questions.data.forEach((q) => {
+          uniqueQuestionsMap.set(q._id, q);
+        });
+
+        let uniqueQuestions = Array.from(uniqueQuestionsMap.values());
+        setCurrentQuestions(uniqueQuestions);
       } catch (err) {
         console.log(err);
       }
