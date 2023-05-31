@@ -869,9 +869,15 @@ Routes for Question changes
 app.put("/question/:id/upvote", async (req, res) => {
   try {
     const questionId = req.params.id;
+
     const updatedQuestion = await Question.findByIdAndUpdate(
       questionId,
       { $inc: { upvotes: 1 } },
+      { new: true }
+    );
+    const updated  = await User.findByIdAndUpdate(
+      updatedQuestion.asked_by,
+      { $inc: { reputation: 5 } },
       { new: true }
     );
 
@@ -891,6 +897,12 @@ app.put("/question/:id/downvote", async (req, res) => {
     const updatedQuestion = await Question.findByIdAndUpdate(
       questionId,
       { $inc: { upvotes: -1 } },
+      { new: true }
+    );
+
+    const updatedUser = await User.findByIdAndUpdate(
+      updatedQuestion.asked_by,
+      { $inc: { reputation: -10 } },
       { new: true }
     );
 
@@ -994,6 +1006,7 @@ app.put("/comment/:id/upvote", async (req, res) => {
       res.status(404).send("Comment not found");
       return;
     }
+  
     // Send a success response
     res.status(200).json(updatedComment);
   } catch (err) {
@@ -1051,6 +1064,44 @@ app.put("/answer/:id/upvote", async (req, res) => {
       .populate("comments")
       .populate("ans_by")
       .exec();
+    let oldAnswer = await Answer.findById(req.params.id);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      oldAnswer.asked_by,
+      { $inc: { reputation: 5 } },
+      { new: true }
+    );
+
+    if (!updatedAnswer) {
+      res.status(404).send("Comment not found");
+      return;
+    }
+    // Send a success response
+    res.status(200).json(updatedAnswer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
+  }
+});
+
+app.put("/answer/:id/downvote", async (req, res) => {
+  try {
+    // Get the comment by id
+    let updatedAnswer = await Answer.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { upvotes: -1 } },
+      { new: true }
+    )
+      .populate("comments")
+      .populate("ans_by")
+      .exec();
+    let oldAnswer = await Answer.findById(req.params.id);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      oldAnswer.asked_by,
+      { $inc: { reputation: -10 } },
+      { new: true }
+    );
 
     if (!updatedAnswer) {
       res.status(404).send("Comment not found");

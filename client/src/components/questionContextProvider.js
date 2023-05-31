@@ -200,14 +200,14 @@ export default function QuestionContextProvider({ children }) {
 
   const handleUpvote = async (question) => {
     try {
-      await axios.put(`http://localhost:8000/question/${question._id}/upvote`);
-
-      await axios.put(
-        `http://localhost:8000/user/${question.asked_by._id}/increase/${5}`
-      );
-
+      await axios.put(`http://localhost:8000/question/${question._id}/upvote`, {
+        user: authContext.userId,
+      });
       await fetchAllQuestions();
-      await handleQuestionClick(question._id);
+      const updated = await axios.get(
+        `http://localhost:8000/questions?id=${question._id}`
+      );
+      setDetailedQuestion(updated);
     } catch (err) {
       console.log(err);
     }
@@ -215,16 +215,16 @@ export default function QuestionContextProvider({ children }) {
 
   const handleDownVote = async (question) => {
     try {
-      await axios.put(
-        `http://localhost:8000/question/${question._id}/downvote`
-      );
-
-      await axios.put(
-        `http://localhost:8000/user/${question.asked_by._id}/decrease/${10}`
-      );
+      await axios.put(`http://localhost:8000/question/${question._id}/downvote`, {
+        user: authContext.userId,
+      });
 
       await fetchAllQuestions();
-      await handleQuestionClick(question._id);
+      await fetchAllQuestions();
+      const updated = await axios.get(
+        `http://localhost:8000/questions?id=${question._id}`
+      );
+      setDetailedQuestion(updated);
     } catch (err) {
       console.log(err);
     }

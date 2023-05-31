@@ -60,7 +60,7 @@ function AnswerComments({ answer }) {
   const totalPages = Math.ceil(comments.length / numPerPage);
 
   const schema = yup.object().shape({
-    comment: yup.string().required(),
+    comment: yup.string().max(140).required(),
   });
 
   const { register, handleSubmit, reset } = useForm({
@@ -68,7 +68,7 @@ function AnswerComments({ answer }) {
   });
 
   const onSubmit = async (data) => {
-    if (authContext.reputation > 50) {
+    if (authContext.userRole !== "guest") {
       try {
         console.log(authContext);
         const newComment = {
@@ -99,11 +99,7 @@ function AnswerComments({ answer }) {
         console.error(err);
       }
     } else {
-      setErrorMessage(
-        authContext.userRole === "guest"
-          ? "You cant comment as a guest - please log in"
-          : "You need at least 50 reputation points to comment"
-      );
+      setErrorMessage("You cant comment as a guest - please log in");
       reset();
       setOpen(true);
     }
@@ -257,13 +253,41 @@ function SingleAnswer({ answer }) {
     if (authContext.reputation >= 50) {
       try {
         const updatedAnswer = await axios.put(
-          `http://localhost:8000/answer/${answer._id}/upvote`
+          `http://localhost:8000/answer/${answer._id}/upvote`,
+          { user: authContext.userId }
         );
         // After successfully upvoting, fetch the updated comment data.
         console.log(updatedAnswer.data);
         setAnswer(updatedAnswer.data);
       } catch (err) {
         console.error(err);
+        setErrorMessage("failed to upvote - communication error");
+        setOpen(true);
+      }
+    } else {
+      setErrorMessage(
+        authContext.userRole === "guest"
+          ? "You cant vote as a guest"
+          : "You need at least 50 reputation points to upvote."
+      );
+      setOpen(true);
+    }
+  };
+
+  const handleDownVote = async () => {
+    if (authContext.reputation >= 50) {
+      try {
+        const updatedAnswer = await axios.put(
+          `http://localhost:8000/answer/${answer._id}/downvote`,
+          { user: authContext.userId }
+        );
+        // After successfully upvoting, fetch the updated comment data.
+        console.log(updatedAnswer.data);
+        setAnswer(updatedAnswer.data);
+      } catch (err) {
+        console.error(err);
+        setErrorMessage("failed to downvote - communication error");
+        setOpen(true);
       }
     } else {
       setErrorMessage(
@@ -373,22 +397,26 @@ function SingleAnswer({ answer }) {
                 justifyContent={"space-evenly"}
               >
                 {" "}
-                <Grid item>
+                <Grid item sx={{ maxwidth: 10 }}>
                   <Grid
                     container
-                    spacing={2}
+                    spacing={5}
                     direction="column"
                     justifyContent={"flex-start"}
                     flexDirection={"column"}
                   >
-                    {" "}
                     <Grid item>
                       <Button onClick={handleUpvote}>
-                        <ThumbUpIcon />
+                        <KeyboardArrowUpIcon fontSize="small" />
                       </Button>
                     </Grid>
-                    <Grid item sx={{ ml: 3, mb: 0 }}>
-                      <Typography>{answr.upvotes}</Typography>
+                    <Grid item sx={{ ml: 2 }}>
+                      <Typography variant="h4">{answr.upvotes}</Typography>
+                    </Grid>
+                    <Grid item>
+                      <Button onClick={handleDownVote}>
+                        <KeyboardArrowDownIcon fontSize="small" />
+                      </Button>
                     </Grid>
                   </Grid>
                 </Grid>
@@ -583,23 +611,22 @@ function SingleComment({ comment }) {
   const authContext = useContext(AuthContext);
 
   const handleUpvote = async () => {
-    if (authContext.reputation >= 50) {
+    if (authContext.userRole !== "guest") {
       try {
         const updatedComment = await axios.put(
-          `http://localhost:8000/comment/${comment._id}/upvote`
+          `http://localhost:8000/comment/${comment._id}/upvote`,
+          { user: authContext.userId }
         );
         // After successfully upvoting, fetch the updated comment data.
         console.log(updatedComment.data);
         setComment(updatedComment.data);
       } catch (err) {
         console.error(err);
+        setErrorMessage("Communication error - upvote failed");
+        setOpen(true);
       }
     } else {
-      setErrorMessage(
-        authContext.userRole === "guest"
-          ? "You cant vote as a guest"
-          : "You need at least 50 reputation points to upvote."
-      );
+      setErrorMessage("You cant vote as a guest");
       setOpen(true);
     }
   };
@@ -722,7 +749,7 @@ function QuestionComments({ question }) {
   const totalPages = Math.ceil(comments.length / numPerPage);
 
   const schema = yup.object().shape({
-    comment: yup.string().required(),
+    comment: yup.string().max(140).required(),
   });
 
   const { register, handleSubmit, reset } = useForm({
@@ -730,7 +757,7 @@ function QuestionComments({ question }) {
   });
 
   const onSubmit = async (data) => {
-    if (authContext.reputation > 50) {
+    if (authContext.userRole !== "guest") {
       try {
         console.log(authContext);
         const newComment = {
@@ -759,13 +786,12 @@ function QuestionComments({ question }) {
         reset();
       } catch (err) {
         console.error(err);
+        setErrorMessage("Communication error");
+        setOpen(true);
+        reset();
       }
     } else {
-      setErrorMessage(
-        authContext.userRole === "guest"
-          ? "You cant comment as a guest - please log in"
-          : "You need at least 50 reputation points to comment"
-      );
+      setErrorMessage("You cant comment as a guest - please log in");
       reset();
       setOpen(true);
     }
@@ -915,6 +941,8 @@ function QuestionHeader({ question }) {
         setVotes(updated.data[0].upvotes);
       } catch (err) {
         console.log(err);
+        setErrorMessage("Communication error");
+        setOpen(true);
       }
     } else {
       setErrorMessage(
@@ -939,6 +967,8 @@ function QuestionHeader({ question }) {
         setVotes(updated.data[0].upvotes);
       } catch (err) {
         console.log(err);
+        setErrorMessage("Communication error");
+        setOpen(true);
       }
     } else {
       setErrorMessage(
