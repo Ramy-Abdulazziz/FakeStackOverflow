@@ -42,6 +42,7 @@ function UserQuestions() {
     };
 
     getUserQuestion();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminContext.loadingQuestions]);
   return (
     <>
@@ -199,6 +200,7 @@ export default function AdminUserProfile() {
   useEffect(() => {
     authContext.refreshUserInfo();
     questionContext.fetchUser();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return authContext.user === null ? (
     <Skeleton variant="square">

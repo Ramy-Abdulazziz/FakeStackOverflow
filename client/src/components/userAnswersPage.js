@@ -1,16 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import Skeleton from "@mui/material/Skeleton";
-import Button from "@mui/material/Button";
 import { useState, useContext, useEffect } from "react";
-import { Link, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import AuthContext from "./authContext";
 import QuestionDisplay from "./questionDisplay";
-import Paper from "@mui/material/Paper";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import ToggleButton from "@mui/material/ToggleButton";
 import QuestionContext from "./questionContext";
-import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
-import Header from "./header";
 import axios from "axios";
 
 export default function UserAnsweredPage() {

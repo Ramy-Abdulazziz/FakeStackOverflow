@@ -1,7 +1,6 @@
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import axios from "axios";
 import {
   TextField,
   Button,
@@ -15,7 +14,6 @@ import {
 } from "@mui/material";
 import { useContext } from "react";
 import AuthContext from "./authContext";
-import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import QuestionContext from "./questionContext";
 

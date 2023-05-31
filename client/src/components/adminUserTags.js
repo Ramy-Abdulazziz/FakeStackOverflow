@@ -1,9 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import QuestionContext from "./questionContext";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
-import AuthContext from "./authContext";
 import QuizIcon from "@mui/icons-material/Quiz";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -280,6 +278,7 @@ export default function AdminUserTagsPage() {
     };
 
     getUserTags();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

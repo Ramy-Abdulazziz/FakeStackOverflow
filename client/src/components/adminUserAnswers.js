@@ -1,7 +1,6 @@
 import Skeleton from "@mui/material/Skeleton";
 import { useState, useContext, useEffect } from "react";
 import { Typography } from "@mui/material";
-import AuthContext from "./authContext";
 import QuestionDisplay from "./questionDisplay";
 import QuestionContext from "./questionContext";
 import Container from "@mui/material/Container";
@@ -35,6 +34,7 @@ export default function AdminUserAnsweredPage() {
     };
 
     getQuestions();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

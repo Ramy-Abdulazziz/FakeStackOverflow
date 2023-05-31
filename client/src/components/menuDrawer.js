@@ -29,9 +29,7 @@ export default function MenuDrawer({ open, setOpen }) {
   useEffect(() => {
     const getUserStatus = async () => {
       if (authContext.isLoggedIn && authContext.userRole !== "guest") {
-        console.log("user authcontrext");
 
-        console.log(authContext);
         setUserName(authContext.userName);
       }
     };

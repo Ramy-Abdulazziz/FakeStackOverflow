@@ -52,6 +52,7 @@ function Users() {
     };
 
     getUsers();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleUserClick = async (id) => {
@@ -267,6 +268,7 @@ export default function AdminProfile() {
   useEffect(() => {
     authContext.refreshUserInfo();
     questionContext.fetchUser();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return authContext.user === null ? (
     <Skeleton variant="square">

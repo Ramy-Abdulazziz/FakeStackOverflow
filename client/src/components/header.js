@@ -1,7 +1,6 @@
 import AppBar from "@mui/material/AppBar";
 import Typography from "@mui/material/Typography";
 import Toolbar from "@mui/material/Toolbar";
-import Button from "@mui/material/Button";
 import MenuDrawer from "./menuDrawer";
 import { styled, alpha } from "@mui/material/styles";
 import IconButton from "@mui/material/IconButton";
@@ -9,9 +8,6 @@ import InputBase from "@mui/material/InputBase";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import { useState, useContext } from "react";
-import AuthContext from "./authContext";
-import axios from "axios";
-import Link from "@mui/material/Link";
 import QuestionContext from "./questionContext";
 import { useLocation } from "react-router";
 import { useNavigate } from "react-router-dom";
