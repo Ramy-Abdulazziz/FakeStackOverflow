@@ -67,6 +67,11 @@ function Users() {
         return;
       }
       const response = await adminContext.deleteUser(id);
+      if(response === undefined){
+        setSuccess("Deletion Cancelled")
+        setOpenSuccess(true); 
+        return;
+      }
       if (response.status === 200) {
         setSuccess("User deleted successfully");
         setOpenSuccess(true);
