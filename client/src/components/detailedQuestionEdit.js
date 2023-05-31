@@ -350,7 +350,7 @@ function SingleAnswer({ answer }) {
       );
 
       if (response.status === 200) {
-        setSuccess("Successfully deleted question");
+        setSuccess("Successfully deleted answer");
         setOpenSuccess(true);
         setDeleted(true);
       }

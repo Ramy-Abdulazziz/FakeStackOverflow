@@ -54,7 +54,7 @@ function SingleTagContainer({ tag }) {
       }
     };
     getTagQuestions();
-  }, []);
+  }, [changedName]);
   const handleClick = () => {
     try {
       questionContext.handleTagClick({ tagQuestions });
