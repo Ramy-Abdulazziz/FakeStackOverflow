@@ -7,6 +7,7 @@ import AuthContext from "./authContext";
 import QuizIcon from "@mui/icons-material/Quiz";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
 import axios from "axios";
 import {
   Box,
@@ -18,8 +19,10 @@ import {
   CardActionArea,
   Divider,
   Badge,
-  typographyClasses,
   Stack,
+  TextField,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -27,16 +30,25 @@ function SingleTagContainer({ tag }) {
   const questionContext = useContext(QuestionContext);
   const navigate = useNavigate();
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [tagName, setTagName] = useState(tag.name);
+  const [openError, setOpenError] = useState(false);
+  const [openSuccess, setOpenSucess] = useState(false);
+  const [sucess, setSucess] = useState("");
+  const [error, setError] = useState("");
   const [tagQuestions, setTagQuestions] = useState([]);
+  const [changedName, setChangedName] = useState(tag.name);
+  const [isDeleted, setIsDeleted] = useState(false);
 
   useEffect(() => {
     const getTagQuestions = async () => {
       try {
         const tagQuestions = await axios.get(
-          `http://localhost:8000/questions?tagName=${tag.name}`
+          `http://localhost:8000/questions?tagName=${changedName}`
         );
 
         setTagQuestions(tagQuestions.data);
+        console.log(tagQuestions.data);
       } catch (err) {
         console.log(err);
       }
@@ -51,48 +63,198 @@ function SingleTagContainer({ tag }) {
       console.error(err);
     }
   };
+
+  const handleEditClick = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/tags/${changedName}/usedby`
+      );
+
+      if (response.status === 200) {
+        setIsEditing(true);
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 403) {
+        setOpenError(true);
+        setError(
+          "Cannot edit or delete a tag that is being used by another user"
+        );
+        setIsEditing(false);
+      } else {
+        console.error(err);
+      }
+    }
+  };
+
+  const handleNameChange = (event) => {
+    setTagName(event.target.value);
+  };
+
+  const emptyCheck = (content) => {
+    return content.replace(new RegExp("\\s+", "g"), "") === "";
+  };
+
+  const validateQuestionTags = (questionTags) => {
+    // let moreThanTenChars = new RegExp('[\\w-?\\w]{10,}', 'g')
+    // let invalidChars = new RegExp('[^\w\-]|_', 'g');
+    // let hyphenAtBegining = new RegExp('(?:^|\s)-\w+', 'g');
+    if (emptyCheck(questionTags)) return false;
+
+    let invalid = new RegExp(
+      "[\\w-?\\w]{11,}|([^\\w\\-]|_)|(?:^|\\s)-\\w+|\\w-(?!\\w)",
+      "g"
+    );
+    let splitTags = Array.from(
+      questionTags.match(new RegExp("[^\\b\\s+]+", "g"))
+    );
+
+    if (splitTags.length > 5) return false;
+
+    let badTags = splitTags.some((tag) => tag.match(invalid));
+
+    return !badTags;
+  };
+
+  const handleNameSubmit = async () => {
+    if (validateQuestionTags(tagName) === false) {
+      setError("Please enter a valid tag name");
+      setOpenError(true);
+      return;
+    }
+    try {
+      const data = {
+        newTagName: tagName,
+      };
+
+      const response = await axios.put(
+        `http://localhost:8000/tags/edit/${changedName}`,
+        data
+      );
+
+      if (response.status === 200) {
+        setChangedName(tagName);
+        setSucess("Successfully changed tag name");
+        setOpenSucess(true);
+      }
+      setIsEditing(false);
+    } catch (err) {
+      setError("Error editing tag");
+      setOpenError(true);
+      setIsEditing(false);
+
+      console.error(err);
+    }
+  };
+
+  const handleClose = () => {
+    setOpenError(false);
+    setOpenSucess(false);
+  };
+
+  const handleDelete = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/tags/${changedName}/usedby`
+      );
+
+      if (response.status === 200) {
+        const isDel = await axios.delete(
+          `http://localhost:8000/tags/delete/${changedName}`
+        );
+
+        if (isDel.status === 200) {
+          setSucess("Successfully deleted tag");
+          setOpenSucess(true);
+          setIsDeleted(true);
+        }
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 403) {
+        setOpenError(true);
+        setError(
+          "Cannot edit or delete a tag that is being used by another user"
+        );
+      } else {
+        console.error(err);
+      }
+    }
+  };
   return (
-    <Grid item>
-      <Card sx={{ minWidth: 200 }}>
-        <CardActionArea onClick={() => handleClick(tag.name)}>
-          <CardContent>
-            <Container sx={{ width: "100%" }}>
-              <Grid container spacing={3}>
-                <Grid item>
-                  <Typography variant="h5" sx={{ ml: "auto", mr: "auto" }}>
-                    {tag.name}
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <Badge
-                    anchorOrigin={{
-                      vertical: "top",
-                      horizontal: "right",
-                    }}
-                    color="primary"
-                    badgeContent={tagQuestions.length}
-                    max={50}
-                  >
-                    <QuizIcon />
-                  </Badge>
-                </Grid>
-              </Grid>
-            </Container>
-          </CardContent>
-        </CardActionArea>
-        <Divider />
-        <CardContent>
-          <Stack justifyContent={"space-evenly"} spacing={2} direction={"row"}>
-            <Button>
-              <ModeEditIcon />
-            </Button>
-            <Button>
-              <DeleteIcon />
-            </Button>
-          </Stack>
-        </CardContent>
-      </Card>
-    </Grid>
+    <>
+      {!isDeleted && (
+        <Grid item>
+          <Card sx={{ minWidth: 200 }}>
+            {isEditing ? (
+              <TextField
+                defaultValue={changedName}
+                onChange={handleNameChange}
+              />
+            ) : (
+              <CardActionArea onClick={() => handleClick(tag.name)}>
+                <CardContent>
+                  <Container sx={{ width: "100%" }}>
+                    <Grid container spacing={3}>
+                      <Grid item>
+                        <Typography
+                          variant="h5"
+                          sx={{ ml: "auto", mr: "auto" }}
+                        >
+                          {changedName}
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <Badge
+                          anchorOrigin={{
+                            vertical: "top",
+                            horizontal: "right",
+                          }}
+                          color="primary"
+                          badgeContent={tagQuestions.length}
+                          max={50}
+                        >
+                          <QuizIcon />
+                        </Badge>
+                      </Grid>
+                    </Grid>
+                  </Container>
+                </CardContent>
+              </CardActionArea>
+            )}
+            <Divider />
+            <CardContent>
+              <Stack
+                justifyContent={"space-evenly"}
+                spacing={2}
+                direction={"row"}
+              >
+                <Button
+                  onClick={isEditing ? handleNameSubmit : handleEditClick}
+                >
+                  {isEditing ? <DownloadDoneIcon /> : <ModeEditIcon />}
+                </Button>
+                <Button onClick={handleDelete}>
+                  <DeleteIcon />
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+      )}
+      <Snackbar open={openError} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+          {error}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+          {sucess}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
 

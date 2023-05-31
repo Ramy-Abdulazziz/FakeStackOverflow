@@ -408,6 +408,10 @@ app.delete("/question/:id/delete", async (req, res) => {
     // Find the question
     const question = await Question.findById(id);
 
+    // Store user ID for later use
+    const userId = question.asked_by;
+    const user = await User.findById(userId);
+
     // Delete all answers and their comments
     for (let answerId of question.answers) {
       const answer = await Answer.findById(answerId);
@@ -423,6 +427,27 @@ app.delete("/question/:id/delete", async (req, res) => {
     // Delete all comments of the question
     for (let commentId of question.comments) {
       await Comment.findByIdAndRemove(commentId);
+    }
+
+    // For each tag, check if the user is still using the tag in other questions
+    for (let tagId of question.tags) {
+      const tag = await Tag.findById(tagId);
+      // Get all questions of the user
+      const userQuestions = await Question.find({ asked_by: user._id });
+      // Check if the user is still using the tag in other questions
+      const isTagUsedByUser = userQuestions.some(
+        (q) => q._id.toString() !== id && q.tags.includes(tagId)
+      );
+
+      if (!isTagUsedByUser) {
+        // If not, remove the user's ID from the tag's `used_by` field
+        const index = tag.used_by.indexOf(userId);
+        console.log("removing user");
+        if (index > -1) {
+          tag.used_by.splice(index, 1);
+          await tag.save();
+        }
+      }
     }
 
     // Finally, delete the question itself
@@ -569,6 +594,7 @@ app.get("/questions", async (req, res) => {
       questions = await Question.find(query)
         .populate("answers")
         .populate("tags")
+        .populate("tags.created_by")
         .populate("asked_by")
         .exec();
     }
@@ -734,6 +760,84 @@ app.get("/user/tags/:id", async (req, res) => {
     res.status(200).json(tags);
   } catch (err) {
     res.status(500).json({ message: "system error" });
+  }
+});
+
+app.get("/tags/:name/usedby", async (req, res) => {
+  try {
+    const tag = await Tag.findOne({ name: req.params.name });
+
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found" });
+    }
+
+    if (tag.used_by.length <= 1) {
+      return res
+        .status(200)
+        .json({ message: "Tag is not being used by other users" });
+    } else {
+      return res
+        .status(403)
+        .json({ message: "Tag is not being used by other users" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+app.put("/tags/edit/:tagName", async (req, res) => {
+  try {
+    const { tagName } = req.params;
+    const { newTagName } = req.body; // Assuming new tag name is passed in the request body
+
+    // Find the tag with the provided name
+    const tag = await Tag.findOne({ name: tagName });
+
+    // If no such tag exists, return an error
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found" });
+    }
+
+    // Update the name of the tag
+    tag.name = newTagName;
+
+    // Save the updated tag
+    await tag.save();
+
+    // Respond with the updated tag
+    res.status(200).json(tag);
+  } catch (err) {
+    // Handle any potential errors
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.delete("/tags/delete/:tagName", async (req, res) => {
+  try {
+    const { tagName } = req.params;
+
+    // Find the tag with the provided name
+    const tag = await Tag.findOne({ name: tagName });
+
+    // If no such tag exists, return an error
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found" });
+    }
+
+    // Remove the tagId from any question that is using it
+    await Question.updateMany({ tags: tag._id }, { $pull: { tags: tag._id } });
+
+    // Delete the tag
+    await Tag.findByIdAndRemove(tag._id);
+
+    // Respond with a success message
+    res.status(200).json({ message: "Tag deleted successfully" });
+  } catch (err) {
+    // Handle any potential errors
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

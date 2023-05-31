@@ -282,19 +282,16 @@ export default function QuestionContextProvider({ children }) {
       });
   };
 
-  const handleDelete = async(id) => {
-
-    try{
-
-      await axios.delete(`http://localhost:8000/question/${id}/delete`)
-      fetchAllQuestions(); 
-      fetchAllUserAnsweredQuestions(); 
-      fetchAllUserQuestions(); 
-    }catch(err){
-
-      console.error(err); 
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/question/${id}/delete`);
+      fetchAllQuestions();
+      fetchAllUserAnsweredQuestions();
+      fetchAllUserQuestions();
+    } catch (err) {
+      console.error(err);
     }
-  }
+  };
   return (
     <QuestionContext.Provider
       value={{
