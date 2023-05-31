@@ -57,6 +57,8 @@ store.on("error", function (error) {
   console.error("Error connecting to session storage");
 });
 
+//Create Session Storage for usersessions
+
 app.use(
   session({
     secret: "This is a secret",
@@ -69,20 +71,23 @@ app.use(
   })
 );
 
+/*
+Routes for user authentication: 
+- user login
+- user logout
+- guest login
+- guest logout
+- session validation
+- user sign up
+*/
 app.post("/login", async (req, res) => {
   try {
-    console.log("log in attempted");
     console.log(req.session.id);
 
     const username = req.body.username;
     const password = req.body.password;
 
-    console.log(username);
-    console.log(password);
-
     let user = await User.findOne({ user_name: username }).exec();
-
-    console.log(user.user_name);
 
     if (user) {
       let correctPass = await bcrypt.compare(password, user.password);
@@ -111,8 +116,14 @@ app.post("/login", async (req, res) => {
           user_name: user.user_name,
           userID: user._id,
           userRole: user.admin ? "admin" : "user",
+          reputation: user.reputation,
+          user: user,
         });
+      } else {
+        res.send(401).json({ message: "user does not exist" });
       }
+    } else {
+      res.send(401).json({ message: "user does not exist" });
     }
   } catch (err) {
     console.error("error connecting", err);
@@ -127,16 +138,19 @@ app.post("/logout", async (req, res) => {
           res.sendStatus(500);
           console.error(err);
         } else {
-          res.clearCookie(req.cookies.yourSessionCookieName);
-          res.send(200).json({ message: "user successfully logged out" });
+          res.clearCookie("connect.sid");
+          res.status(200).json({ message: "user successfully logged out" });
         }
       });
+    } else {
+      res.send(200).json({ message: "user is not logged in" });
     }
   } catch (err) {
     res.send(500).json({ message: "Error logging out user - try again" });
     console.error("error logging out", err);
   }
 });
+
 app.post("/guest", async (req, res) => {
   try {
     console.log("guest user logging in ");
@@ -153,12 +167,16 @@ app.post("/guest", async (req, res) => {
         }
         req.session.role = "guest";
         console.log("successful guest login on server side");
-        return res.status(200).json({ message: "guest login successful" });
+        return res
+          .status(200)
+          .json({ message: "guest login successful", userRole: "guest" });
       });
     } else {
       req.session.role = "guest";
       console.log("successful guest login on server side");
-      return res.status(200).json({ message: "guest login successful" });
+      return res
+        .status(200)
+        .json({ message: "guest login successful", userRole: "guest" });
     }
   } catch (err) {
     console.log(err);
@@ -169,10 +187,18 @@ app.post("/guest", async (req, res) => {
 app.get("/validate-session", async (req, res) => {
   try {
     if (req.session && req.session.role === ("user" || "admin")) {
+      const id = req.session.userId;
+      const user = await User.findById(id);
       res.status(200).json({
         isLoggedIn: true,
         userID: req.session.userId,
         userRole: req.session.role,
+        user: user,
+        reputation: user.reputation,
+        admin: user.admin,
+        signup: user.sign_up_date,
+        userName: user.user_name,
+        email: user.email,
       });
     } else if (req.session && req.session.role === "guest") {
       res.status(200).json({ isLoggedIn: true, userRole: "guest" });
@@ -184,27 +210,131 @@ app.get("/validate-session", async (req, res) => {
     console.error(error);
   }
 });
+
+app.post("/sign-up", async (req, res) => {
+  try {
+    const userDetails = req.body;
+
+    const existingUser = await User.findOne({ email: userDetails.email });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "Email is already registered" });
+    }
+
+    const hashedPass = await bcrypt.hash(userDetails.password, 10);
+
+    const newUser = new User({
+      user_name: userDetails.username,
+      email: userDetails.email,
+      password: hashedPass,
+    });
+
+    await newUser.save();
+
+    return res.status(201).json({ message: "New user added successfully" });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ message: "Error adding user - please try again" });
+  }
+});
+
+/**
+ *
+ * Routes for increasing and decreasing user reputation
+ */
+
+app.put("user/:id/increase/:amount/", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const increase = req.params.amount;
+    const updatedUser = User.findByIdAndUpdate(
+      userId,
+      { $inc: { reputation: increase } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      res.send(401).json({ message: "user not found" });
+    }
+    res.send(200).json({ message: "user reputation decreased successfully" });
+  } catch (err) {
+    res.send(500).json({ message: "unable to increase user reputation" });
+    console.error(err);
+  }
+});
+
+app.put("user/:id/decrease/:amount/", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const decrease = req.params.amount;
+    const updatedUser = User.findByIdAndUpdate(
+      userId,
+      { $inc: { reputation: decrease * -1 } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      res.send(401).json({ message: "user not found" });
+    }
+
+    res.send(200).json({ message: "user reputation decreased successfully" });
+  } catch (err) {
+    res.send(500).json({ message: "unable to increase user reputation" });
+    console.error(err);
+  }
+});
 //Define routes
-app.put("/submit/question", async (req, res) => {
+app.post("/submit/question", async (req, res) => {
   console.log("receiving new question");
   try {
     const questionData = req.body;
-    const tagsPromises = questionData.tags.map(async (tagName) => {
-      const tag = await Tag.findOne({ name: tagName });
-      if (tag) {
-        return tag;
-      } else {
-        const newTag = new Tag({ name: tagName });
-        await newTag.save();
-        return newTag;
+    const user = await User.findById(questionData.user);
+    const existingTagsPromises = questionData.existingTags.map(
+      async (tagName) => {
+        const tag = await Tag.findOneAndUpdate(
+          { name: tagName },
+          { $push: { used_by: user._id } },
+          { new: true, useFindAndModify: false }
+        );
+        return tag; // return the tag here
       }
+    );
+    const existingTags = await Promise.all(existingTagsPromises);
+
+    const newTagsPromises = questionData.newTags.map(async (tagName) => {
+      const tagDetails = {
+        name: tagName,
+        created_by: user._id,
+        used_by: [user._id],
+      };
+
+      const newTag = new Tag(tagDetails);
+      await newTag.save();
+      return newTag; // return the new tag here
     });
-    const tags = await Promise.all(tagsPromises);
 
-    questionData.tags = tags.map((tag) => tag._id);
+    const newTags = await Promise.all(newTagsPromises);
 
-    const newQuestion = new Question(questionData);
+    // Create an array of tag IDs
+    const tagIds = [...existingTags, ...newTags].map((tag) => tag._id);
+
+    const newQuestionDetails = {
+      title: questionData.title,
+      text: questionData.text,
+      summary: questionData.summary,
+      tags: tagIds,
+      asked_by: user._id,
+    };
+    const newQuestion = new Question(newQuestionDetails);
     await newQuestion.save();
+
+    const updatedUser = await User.findByIdAndUpdate(
+      questionData.user,
+      { $push: { questions: newQuestion._id } },
+      { new: true }
+    );
     res
       .status(201)
       .json({ message: "Question added successfully", newQuestion });
@@ -214,13 +344,165 @@ app.put("/submit/question", async (req, res) => {
   }
 });
 
-app.put("/submit/:id/answer", async (req, res) => {
+app.put("/submit/question/:id/edit", async (req, res) => {
+  console.log("receiving new question");
+  try {
+    const questionData = req.body;
+    const qid = req.params.id;
+    console.log(qid);
+    const user = await User.findById(questionData.user);
+    const existingTagsPromises = questionData.existingTags.map(
+      async (tagName) => {
+        const tag = await Tag.findOneAndUpdate(
+          { name: tagName },
+          { $push: { used_by: user._id } },
+          { new: true, useFindAndModify: false }
+        );
+        return tag; // return the tag here
+      }
+    );
+    const existingTags = await Promise.all(existingTagsPromises);
+
+    const newTagsPromises = questionData.newTags.map(async (tagName) => {
+      const tagDetails = {
+        name: tagName,
+        created_by: user._id,
+        used_by: [user._id],
+      };
+
+      const newTag = new Tag(tagDetails);
+      await newTag.save();
+      return newTag; // return the new tag here
+    });
+
+    const newTags = await Promise.all(newTagsPromises);
+
+    // Create an array of tag IDs
+    const tagIds = [...existingTags, ...newTags].map((tag) => tag._id);
+
+    const newQuestionDetails = {
+      title: questionData.title,
+      text: questionData.text,
+      summary: questionData.summary,
+      tags: tagIds,
+      asked_by: user._id,
+    };
+    const updatedQuestion = await Question.findByIdAndUpdate(
+      qid, // get the question id from the request parameters
+      {
+        $set: newQuestionDetails,
+      },
+      {
+        new: true, // option that asks mongoose to return the updated version of the document instead of the pre-updated one
+        runValidators: true, // option that asks mongoose to run the model's validators again, as the data is being updated
+      }
+    );
+    console.log(updatedQuestion);
+    res
+      .status(200)
+      .json({ message: "Question updated successfully", updatedQuestion });
+  } catch (error) {
+    console.error("Error in /submit/question:", error);
+    res.status(500).json({ message: "Error adding question", error });
+  }
+});
+
+app.delete("/question/:id/delete", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find the question
+    const question = await Question.findById(id);
+
+    // Store user ID for later use
+    const userId = question.asked_by;
+    const user = await User.findById(userId);
+
+    // Delete all answers and their comments
+    for (let answerId of question.answers) {
+      const answer = await Answer.findById(answerId);
+
+      // Delete all comments of each answer
+      for (let commentId of answer.comments) {
+        // Remove comment id from user's comments array
+        if (user) {
+          user.comments.pull(commentId);
+          await user.save();
+        }
+
+        await Comment.findByIdAndRemove(commentId);
+      }
+
+      await Answer.findByIdAndRemove(answerId);
+    }
+
+    // Delete all comments of the question
+    for (let commentId of question.comments) {
+      // Remove comment id from user's comments array
+      if (user) {
+        user.comments.pull(commentId);
+        await user.save();
+      }
+
+      await Comment.findByIdAndRemove(commentId);
+    }
+
+    // For each tag, check if the user is still using the tag in other questions
+    for (let tagId of question.tags) {
+      const tag = await Tag.findById(tagId);
+      // Get all questions of the user
+      const userQuestions = await Question.find({ asked_by: user._id });
+      // Check if the user is still using the tag in other questions
+      const isTagUsedByUser = userQuestions.some(
+        (q) => q._id.toString() !== id && q.tags.includes(tagId)
+      );
+
+      if (!isTagUsedByUser) {
+        // If not, remove the user's ID from the tag's `used_by` field
+        const index = tag.used_by.indexOf(userId);
+        console.log("removing user");
+        if (index > -1) {
+          tag.used_by.splice(index, 1);
+          await tag.save();
+        }
+      }
+    }
+
+    // Finally, delete the question itself
+    await Question.findByIdAndRemove(id);
+
+    res
+      .status(200)
+      .json({ message: "Question and all related data deleted successfully" });
+  } catch (error) {
+    console.error("Error in /question/:id/delete:", error);
+    res.status(500).json({ message: "Error deleting question", error });
+  }
+});
+
+app.post("/submit/:id/answer", async (req, res) => {
   console.log("receiving answer for question");
   try {
     const id = req.params.id;
-    const answerData = req.body;
+    const data = req.body;
+
+    const user = await User.findById(data.user);
+
+    const answerData = {
+      text: data.text,
+      ans_by: user._id,
+      ans_date_time: new Date(),
+      question: data.question,
+    };
+
     const newAnswer = new Answer(answerData);
     await newAnswer.save();
+
+    const userData = await User.findByIdAndUpdate(
+      data.user,
+      { $push: { answers: newAnswer._id } },
+      { new: true, useFindAndModify: false }
+    ).exec();
 
     const updatedQuestion = await Question.findByIdAndUpdate(
       id,
@@ -239,9 +521,64 @@ app.put("/submit/:id/answer", async (req, res) => {
   }
 });
 
+app.get("/questions/user/:id", async (req, res) => {
+  console.log("received request for user questions");
+
+  try {
+    const user_id = req.params.id;
+    const userQuestions = await Question.find({ asked_by: user_id })
+      .populate("tags")
+      .populate("asked_by")
+      .exec();
+
+    res.status(200).json(userQuestions);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: "failed to retrieve user questions" });
+  }
+});
+
+app.get("/questions/answered/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId)
+      .populate({
+        path: "answers",
+        populate: {
+          path: "question",
+          model: "Question",
+          populate: [
+            { path: "answers", model: "Answer" },
+            { path: "tags", model: "Tag" },
+            { path: "asked_by", model: "User" },
+          ],
+        },
+      })
+      .exec();
+    const questions = user.answers.map((answer) => answer.question);
+    questions.forEach((question) => {
+      // Sort the answers array so that the user's answer is first and the rest are sorted by date
+      question.answers.sort((a, b) => {
+        if (a.ans_by.toString() === userId && b.ans_by.toString() === userId) {
+          return b.ans_date_time - a.ans_date_time; // descending order by date for user's answers
+        } else if (a.ans_by.toString() === userId) {
+          return -1;
+        } else if (b.ans_by.toString() === userId) {
+          return 1;
+        } else {
+          return b.ans_date_time - a.ans_date_time; // descending order by date for other users' answers
+        }
+      });
+    });
+
+    res.status(200).json(questions);
+  } catch (err) {
+    console.log(err);
+    res.status(500);
+  }
+});
 app.get("/questions", async (req, res) => {
   console.log("Received request for questions");
-  console.log(req.sort);
   try {
     const tagName = req.query.tagName;
     const unanswered = req.query.unanswered === "true";
@@ -249,11 +586,8 @@ app.get("/questions", async (req, res) => {
     const id = req.query.id;
     let query = {};
 
-    console.log("sort", sort);
     if (tagName) {
-      console.log("Received tagName:", tagName); // Add this line
       const tag = await Tag.findOne({ name: tagName });
-      console.log("Found tag:", tag); // Add this line
 
       if (tag) {
         query.tags = { $in: [tag._id] };
@@ -268,8 +602,7 @@ app.get("/questions", async (req, res) => {
       query._id = id;
     }
 
-    console.log("Query object:", query); // Add this line
-
+    let questions;
     if (id) {
       const question = await Question.findOne({ _id: id })
         .populate("answers")
@@ -281,6 +614,7 @@ app.get("/questions", async (req, res) => {
       questions = await Question.find(query)
         .populate("answers")
         .populate("tags")
+        .populate("tags.created_by")
         .populate("asked_by")
         .exec();
     }
@@ -303,7 +637,6 @@ app.get("/questions", async (req, res) => {
         }
       });
     }
-    console.log("Sending questions:");
 
     if (unanswered) {
       questions.sort((a, b) => b.ask_date - a.ask_date);
@@ -325,7 +658,6 @@ app.get("/search", async (req, res) => {
   }
 
   let searchQuery;
-  console.log(searchText);
   switch (searchBy) {
     case "text_and_title":
       const regexTextAndTitle = new RegExp(searchText, "i");
@@ -335,14 +667,17 @@ app.get("/search", async (req, res) => {
       break;
     case "tags":
       const tag = await Tag.findOne({ name: searchText });
-      console.log("searching for " + tag.name);
       searchQuery = { tags: { $in: [tag._id] } };
       break;
     case "links":
       const linkRegex = new RegExp("\\[([^\\s\\]]+)\\]\\((.*?)\\)", "g");
       const questionsWithLinks = await Question.find({
         text: { $regex: linkRegex },
-      });
+      })
+        .populate("answers")
+        .populate("tags")
+        .populate("asked_by")
+        .exec();
       const foundQuestions = questionsWithLinks.filter((q) => {
         const links = q.text.match(linkRegex);
         return links.some((link) => {
@@ -358,7 +693,11 @@ app.get("/search", async (req, res) => {
   }
 
   try {
-    const foundQuestions = await Question.find(searchQuery);
+    const foundQuestions = await Question.find(searchQuery)
+      .populate("answers")
+      .populate("tags")
+      .populate("asked_by")
+      .exec();
     res.json(foundQuestions);
   } catch (err) {
     console.error("Error searching questions:", err);
@@ -367,7 +706,6 @@ app.get("/search", async (req, res) => {
 });
 
 app.get("/questions/:id/answers", async (req, res) => {
-  console.log("received request for answers");
   try {
     const questionId = req.params.id;
     const question = await Question.findById(questionId).populate("answers");
@@ -378,28 +716,39 @@ app.get("/questions/:id/answers", async (req, res) => {
   }
 });
 
+app.get("/question/:id/comments", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const comments = await Comment.find({ parent: { $in: id } })
+      .populate("created_by")
+      .exec();
+
+    res
+      .status(200)
+      .json(comments.sort((a, b) => b.date_created - a.date_created));
+  } catch (err) {
+    res.status(500).json({ message: "unable to load comments" });
+    console.log(err);
+  }
+});
+
 app.get("/tags", async (req, res) => {
   try {
     const tags = await Tag.find().exec();
     res.json(tags);
   } catch (err) {
-    res.status(500).send("Error retrieving questions");
+    res.status(500).send("Error retrieving tags");
   }
 });
 
 app.get("/tags/:id/name", async (req, res) => {
-  console.log("Received request for tagNames");
   try {
-    console.log("Received request for tagNames"); // Add this line to log the request
-
     const tagId = req.params.id;
-    console.log(tagId);
     const tag = await Tag.findById(tagId);
 
     if (!tag) {
       return res.status(404).json({ message: "Tag not found" });
     }
-    console.log("SENDING TAG NAMES:" + tag.name);
     res.send(tag.name);
   } catch (error) {
     res.status(500).json({ message: "Error fetching tag name", error });
@@ -412,6 +761,158 @@ app.get("/answer", async (req, res) => {
     res.json(questions);
   } catch (err) {
     res.status(500).send("Error retrieving questions");
+  }
+});
+
+/**
+ *
+ * Routes for
+ */
+
+app.get("/user/tags/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const tags = await Tag.find({ created_by: { $in: userId } })
+      .populate("created_by")
+      .populate("used_by")
+      .exec();
+
+    res.status(200).json(tags);
+  } catch (err) {
+    res.status(500).json({ message: "system error" });
+  }
+});
+
+app.get("/tags/:name/usedby", async (req, res) => {
+  try {
+    const tag = await Tag.findOne({ name: req.params.name });
+
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found" });
+    }
+
+    if (tag.used_by.length <= 1) {
+      return res
+        .status(200)
+        .json({ message: "Tag is not being used by other users" });
+    } else {
+      return res
+        .status(403)
+        .json({ message: "Tag is not being used by other users" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+app.put("/tags/edit/:tagName", async (req, res) => {
+  try {
+    const { tagName } = req.params;
+    const { newTagName } = req.body; // Assuming new tag name is passed in the request body
+
+    // Find the tag with the provided name
+    const tag = await Tag.findOne({ name: tagName });
+
+    // If no such tag exists, return an error
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found" });
+    }
+
+    // Update the name of the tag
+    tag.name = newTagName;
+
+    // Save the updated tag
+    await tag.save();
+
+    // Respond with the updated tag
+    res.status(200).json(tag);
+  } catch (err) {
+    // Handle any potential errors
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.delete("/tags/delete/:tagName", async (req, res) => {
+  try {
+    const { tagName } = req.params;
+
+    // Find the tag with the provided name
+    const tag = await Tag.findOne({ name: tagName });
+
+    // If no such tag exists, return an error
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found" });
+    }
+
+    // Remove the tagId from any question that is using it
+    await Question.updateMany({ tags: tag._id }, { $pull: { tags: tag._id } });
+
+    // Delete the tag
+    await Tag.findByIdAndRemove(tag._id);
+
+    // Respond with a success message
+    res.status(200).json({ message: "Tag deleted successfully" });
+  } catch (err) {
+    // Handle any potential errors
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/**
+ 
+Routes for Question changes
+ */
+
+app.put("/question/:id/upvote", async (req, res) => {
+  try {
+    const questionId = req.params.id;
+
+    const updatedQuestion = await Question.findByIdAndUpdate(
+      questionId,
+      { $inc: { upvotes: 1 } },
+      { new: true }
+    );
+    const updated  = await User.findByIdAndUpdate(
+      updatedQuestion.asked_by,
+      { $inc: { reputation: 5 } },
+      { new: true }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+    res.status(200).json(updatedQuestion);
+  } catch (err) {
+    res.send(500).json({ message: "Error upvoting - try again" });
+    console.error(err);
+  }
+});
+
+app.put("/question/:id/downvote", async (req, res) => {
+  try {
+    const questionId = req.params.id;
+    const updatedQuestion = await Question.findByIdAndUpdate(
+      questionId,
+      { $inc: { upvotes: -1 } },
+      { new: true }
+    );
+
+    const updatedUser = await User.findByIdAndUpdate(
+      updatedQuestion.asked_by,
+      { $inc: { reputation: -10 } },
+      { new: true }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+    res.status(200).json(updatedQuestion);
+  } catch (err) {
+    res.status(500).json({ message: "Error upvoting - try again" });
+    console.error(err);
   }
 });
 
@@ -431,6 +932,262 @@ app.put("/questions/:id/views", async (req, res) => {
     res.json(updatedQuestion);
   } catch (error) {
     res.status(500).json({ message: "Error updating question views", error });
+  }
+});
+
+/**
+ * Routes for comments
+ */
+
+app.post("/comment", async (req, res) => {
+  try {
+    const commentDetails = req.body;
+    let parent;
+    let newComments;
+
+    const user = await User.findById(commentDetails.userId);
+    if (commentDetails.parentType === "Question") {
+      parent = await Question.findById(commentDetails.parentId);
+    }
+
+    if (commentDetails.parentType === "Answer") {
+      parent = await Answer.findById(commentDetails.parentId);
+    }
+
+    const newComment = new Comment({
+      text: commentDetails.text,
+      created_by: user._id,
+      parent: parent._id,
+      parentType: commentDetails.parentType,
+    });
+
+    await newComment.save();
+
+    if (commentDetails.parentType === "Question") {
+      parent = await Question.findByIdAndUpdate(
+        commentDetails.parentId,
+        { $push: { comments: newComment._id } },
+        { new: true, useFindAndModify: false }
+      );
+
+      newComments = await Question.fin;
+    }
+
+    if (commentDetails.parentType === "Answer") {
+      parent = await Answer.findByIdAndUpdate(
+        commentDetails.parentId,
+        { $push: { comments: newComment._id } },
+        { new: true, useFindAndModify: false }
+      );
+    }
+    res.status(200).json({
+      message: "Comment added successfully",
+      comment: newComment.populate("created_by"),
+      parent: parent,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.toString() });
+  }
+});
+
+app.put("/comment/:id/upvote", async (req, res) => {
+  try {
+    // Get the comment by id
+    let updatedComment = await Comment.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { upvotes: 1 } },
+      { new: true }
+    )
+      .populate("created_by")
+      .exec();
+
+    if (!updatedComment) {
+      res.status(404).send("Comment not found");
+      return;
+    }
+  
+    // Send a success response
+    res.status(200).json(updatedComment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
+  }
+});
+
+/**
+ * Routes for answers
+ */
+
+app.get("/answer/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const answer = await Answer.findById(id)
+      .populate("comments")
+      .populate("ans_by")
+      .exec();
+
+    if (answer) {
+      res.status(200).json(answer);
+    } else {
+      res.status(404).json({ message: "answer not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "System error" });
+  }
+});
+
+app.get("/answer/:id/comments", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const comments = await Comment.find({ parent: { $in: id } })
+      .populate("created_by")
+      .exec();
+
+    res
+      .status(200)
+      .json(comments.sort((a, b) => b.date_created - a.date_created));
+  } catch (err) {
+    res.status(500).json({ message: "system error" });
+  }
+});
+
+app.put("/answer/:id/upvote", async (req, res) => {
+  try {
+    // Get the comment by id
+    let updatedAnswer = await Answer.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { upvotes: 1 } },
+      { new: true }
+    )
+      .populate("comments")
+      .populate("ans_by")
+      .exec();
+    let oldAnswer = await Answer.findById(req.params.id);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      oldAnswer.asked_by,
+      { $inc: { reputation: 5 } },
+      { new: true }
+    );
+
+    if (!updatedAnswer) {
+      res.status(404).send("Comment not found");
+      return;
+    }
+    // Send a success response
+    res.status(200).json(updatedAnswer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
+  }
+});
+
+app.put("/answer/:id/downvote", async (req, res) => {
+  try {
+    // Get the comment by id
+    let updatedAnswer = await Answer.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { upvotes: -1 } },
+      { new: true }
+    )
+      .populate("comments")
+      .populate("ans_by")
+      .exec();
+    let oldAnswer = await Answer.findById(req.params.id);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      oldAnswer.asked_by,
+      { $inc: { reputation: -10 } },
+      { new: true }
+    );
+
+    if (!updatedAnswer) {
+      res.status(404).send("Comment not found");
+      return;
+    }
+    // Send a success response
+    res.status(200).json(updatedAnswer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
+  }
+});
+
+app.delete("/answer/:id", async (req, res) => {
+  try {
+    // Fetch the answer by its id
+    let answer = await Answer.findById(req.params.id);
+
+    // Check if answer exists
+    if (!answer) {
+      return res.status(404).json({ message: "Answer not found" });
+    }
+
+    // Fetch the associated user
+    let user = await User.findById(answer.ans_by);
+
+    // Delete associated comments
+    for (let commentId of answer.comments) {
+      // Remove comment id from user's comments array
+      if (user) {
+        user.comments.pull(commentId);
+        await user.save();
+      }
+      await Comment.findByIdAndRemove(commentId);
+    }
+
+    // Fetch the associated question
+    let question = await Question.findOne({ answers: req.params.id });
+
+    // Remove answer id from question's answers array
+    if (question) {
+      question.answers.pull(req.params.id);
+      await question.save();
+    }
+
+    // Remove answer id from user's answers array
+    if (user) {
+      user.answers.pull(req.params.id);
+      await user.save();
+    }
+
+    // Delete the answer itself
+    await Answer.findByIdAndRemove(req.params.id);
+
+    // Send response
+    res.status(200).json({ message: "Answer and associated comments deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/answer/:id", async (req, res) => {
+  try {
+    // Fetch the answer by its id
+    let answer = await Answer.findById(req.params.id);
+
+    // Check if answer exists
+    if (!answer) {
+      return res.status(404).json({ message: "Answer not found" });
+    }
+
+    // Update answer text
+    answer = await Answer.findByIdAndUpdate(req.params.id, {
+      text: req.body.text,
+    });
+    await answer.save();
+
+    // Populate the 'ans_by' field
+    answer = await Answer.findById(req.params.id).populate("ans_by");
+
+    // Send response
+    res.status(200).json({ message: "Answer updated", answer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

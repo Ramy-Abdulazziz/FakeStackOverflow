@@ -6,7 +6,7 @@ var Schema = mongoose.Schema;
 var TagSchema = new Schema({
   name: { type: String, required: true },
   created_by: {type: Schema.Types.ObjectId, ref:"User"},
-  used_by:[{type: Schema.Types.ObjectId, ref:"Question"}]
+  used_by:[{type: Schema.Types.ObjectId, ref:"User"}]
 });
 
 TagSchema.virtual("url").get(function () {

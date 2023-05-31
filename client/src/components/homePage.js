@@ -1,143 +1,147 @@
-import { styled, alpha } from "@mui/material/styles";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import InputBase from "@mui/material/InputBase";
-import MenuIcon from "@mui/icons-material/Menu";
-import SearchIcon from "@mui/icons-material/Search";
+import Skeleton from "@mui/material/Skeleton";
 import Button from "@mui/material/Button";
 import { useState, useContext, useEffect } from "react";
-import { Link } from "@mui/material";
-import MenuDrawer from "./menuDrawer";
+import { Link, Typography } from "@mui/material";
 import AuthContext from "./authContext";
 import QuestionDisplay from "./questionDisplay";
 import Paper from "@mui/material/Paper";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ToggleButton from "@mui/material/ToggleButton";
-import axios from "axios";
+import QuestionContext from "./questionContext";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Header from "./header";
+import Fab from "@mui/material/Fab";
+import Grid from "@mui/material/Grid";
+import AddIcon from "@mui/icons-material/Add";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import { useNavigate } from "react-router-dom";
 
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-    [theme.breakpoints.up("sm")]: {
-      width: "12ch",
-      "&:focus": {
-        width: "20ch",
-      },
-    },
-  },
-}));
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(1),
-    width: "auto",
-  },
-}));
-function HomeHeader() {
-  const [menuOpen, setMenuOpen] = useState(false);
+export default function HomePage() {
+  const questionContext = useContext(QuestionContext);
   const authContext = useContext(AuthContext);
+  const [open, setOpen] = useState(false);
+  const [currentQuestions, setCurrentQuestions] = useState([]);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const getQuestions = async () => {
+      // questionContext.fetchAll();
 
-  const toggleMenu = (event) => {
-    if (menuOpen) {
-      setMenuOpen(false);
-    } else if (menuOpen && event.type === "mousedown") {
-      setMenuOpen(false);
-    } else {
-      setMenuOpen(true);
+      setCurrentQuestions(questionContext.displayedQuestions);
+
+      if (authContext.isLoggedIn) {
+        questionContext.fetchUser();
+      }
+    };
+
+    getQuestions();
+  }, []);
+
+  useEffect(() => {
+    setCurrentQuestions(questionContext.displayedQuestions);
+  }, [questionContext.displayedQuestions]);
+
+  const handleNewestSort = async () => {
+    try {
+      await questionContext.onSort({ sort: "newest" });
+    } catch (err) {
+      console.log(err);
     }
   };
 
-  return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            onClick={toggleMenu}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
-          >
-            FakeStackOverflow
-          </Typography>
-
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ "aria-label": "search" }}
-            />
-          </Search>
-          <Button href="#" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-            {authContext.isLoggedIn ? "Log Out" : "Log In"}
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <MenuDrawer open={menuOpen} setOpen={setMenuOpen} />
-    </>
-  );
-}
-
-export default function HomePage() {
-  const authContext = useContext(AuthContext);
-
-  const handleNewestSort = async () => {
-    authContext.onSort({ sort: "newest" });
-  };
-
   const handleActiveSort = async () => {
-    authContext.onSort({ sort: "active" });
+    try {
+      await questionContext.onSort({ sort: "active" });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleUnanswered = async () => {
-    authContext.onSort({ unanswered: true });
+    try {
+      await questionContext.onSort({ unanswered: true });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
+  const handleAddNewClick = async () => {
+    if (authContext.userRole === "guest") {
+      setOpen(true);
+    } else {
+      navigate("/question/add");
+    }
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
   return (
     <>
-      <HomeHeader />
-      <ToggleButtonGroup color="primary" exclusive aria-label="Platform">
-        <ToggleButton value="newest" onClick={handleNewestSort}>Newest</ToggleButton>
-        <ToggleButton value="active" onClick={handleActiveSort}>Active</ToggleButton>
-        <ToggleButton value="unanswered" onClick= {handleUnanswered}>Unanswered</ToggleButton>
-      </ToggleButtonGroup>
-      <QuestionDisplay questions={authContext.allQuestions} />{" "}
-      {/* Conditionally render the QuestionDisplay component */}
+      <Container sx={{ maxHeight: "100%" }}>
+        <Typography
+          className="numQuestions"
+          variant="h3"
+          sx={{
+            maxWidth: 300,
+            ml: "auto",
+            mr: "auto",
+            mt: 5,
+            mb: 5,
+            paddingLeft: 10,
+            paddingRight: 10,
+          }}
+        >
+          {currentQuestions.length === 0
+            ? "No Questions Found"
+            : `${currentQuestions.length} Questions`}
+        </Typography>
+        <div className="filterButtonGroup">
+          <ToggleButtonGroup
+            color="primary"
+            exclusive
+            aria-label="Platform"
+            sx={{}}
+          >
+            <ToggleButton value="newest" onClick={handleNewestSort}>
+              Newest
+            </ToggleButton>
+            <ToggleButton value="active" onClick={handleActiveSort}>
+              Active
+            </ToggleButton>
+            <ToggleButton value="unanswered" onClick={handleUnanswered}>
+              Unanswered
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </div>
+        {questionContext.isLoading ? (
+          <Skeleton variant="rectangular">
+            <QuestionDisplay />
+          </Skeleton>
+        ) : (
+          <QuestionDisplay cls={"qDisplayHome"} questions={currentQuestions} />
+        )}
+      </Container>
+      <Box className="stickyButton" sx={{ mt: 5 }}>
+        <Grid container justifyContent={"flex-end"}>
+          <Grid item>
+            <Fab
+              onClick={handleAddNewClick}
+              className="stickyButton"
+              color="primary"
+            >
+              <AddIcon />
+            </Fab>
+          </Grid>
+        </Grid>
+      </Box>
+
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+          You cannot add a new question as a guest - please log in
+        </Alert>
+      </Snackbar>
     </>
   );
 }

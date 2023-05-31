@@ -2,123 +2,199 @@ import Pagination from "@mui/material/Pagination";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
-
+import { Link, useActionData } from "react-router-dom";
+import Paper from "@mui/material/Paper";
+import { Card, CardContent } from "@mui/material";
+import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
+import PersonIcon from "@mui/icons-material/Person";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Container, Grid } from "@mui/material";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import FormatDateText from "../dateTextUtils";
+import { useEffect } from "react";
+import axios from "axios";
+import QuestionContext from "./questionContext";
+import AuthContext from "./authContext";
 
-function SingleQuestionContainer({ question }) {
+function SingleQuestionContainer({ question, userPage }) {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
+  const questionContext = useContext(QuestionContext);
+
+  const handleTagClick = async (tagName) => {
+    try {
+      const tagQuestions = await axios.get(
+        `http://localhost:8000/questions?tagName=${tagName}`
+      );
+
+      const questions = {
+        tagQuestions: tagQuestions.data,
+      };
+      questionContext.handleTagClick(questions);
+      // navigate("/home");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Box
-        sx={{
-          width: 800,
-          height: 200,
-          borderRadius: 5,
-          backgroundColor: (theme) =>
-            theme.palette.mode === "dark" ? "#121212" : "#fff",
-        }}
-      >
-        <Grid
-          container
-          spacing={5}
-          direction="row"
-          mt={2}
-          sx={{
-            alignItems: "center",
-          }}
-        >
+      <Container sx={{}}>
+        <Paper elevation={4} sx={{ mb: 2, mt: 2, borderRadius: 2 }}>
           <Grid
-            item
+            container
+            spacing={10}
+            direction="row"
+            justifyContent="space-evenly"
             sx={{
-              ml: 5,
-              mt: 2,
-            }}
-          >
-            <Typography component="p" color={"grey"}>
-              {question.answers.length}
-            </Typography>
-            <Typography component="p" color={"grey"}>
-              {question.views} views
-            </Typography>
-          </Grid>
-          <Grid
-            item
-            sx={{
-              flexWrap: "wrap",
+              mt: 1,
             }}
           >
             <Grid
-              container
-              spacing={2}
-              direction="column"
+              item
               sx={{
-                alignItems: "center",
+                flexWrap: "wrap",
+                width: 500,
               }}
             >
               <Grid
-                item
+                container
+                spacing={2}
+                direction="column"
+                justifyContent="flex-start"
+                alignItems="flex-start"
                 sx={{
-                  wordWrap: "break-word",
-                  width: 450,
+                  mb: 2,
                 }}
               >
-                <Link href="/question/:id" variant="body2">
-                  {question.title}
-                </Link>
-              </Grid>
-              <Grid
-                item
-                sx={{
-                  wordWrap: "break-word",
-                  width: 450,
-                }}
-              >
-                <Typography component="p" color={"grey"}>
-                  {question.summary}
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item sx={{ mt: 2 }}>
-            <Typography component="p" color={"grey"}>
-              asked by {question.asked_by.user_name}
-            </Typography>
-            <Typography component="p" color={"grey"}>
-              {FormatDateText.formatDateText(question.ask_date)}
-            </Typography>
-          </Grid>
-          <Grid item>
-            <Grid
-              container
-              spacing={2}
-              direction="row"
-              ml={15}
-              sx={{
-                alignItems: "center",
-              }}
-            >
-              {question.tags.map((tag, index) => (
-                <Grid item key={index}>
-                  <Button type="button" variant="contained">
-                    {" "}
-                    {tag.name}
-                  </Button>
+                <Grid
+                  item
+                  sx={{
+                    wordWrap: "break-word",
+                  }}
+                >
+                  <Link
+                    onClick={() =>
+                      questionContext.handleQuestionClick(question._id)
+                    }
+                    to={
+                      userPage
+                        ? `/user/${question._id}/answers`
+                        : `/answers/${question._id}`
+                    }
+                  >
+                    <Typography variant="h6">{question.title}</Typography>
+                  </Link>
                 </Grid>
-              ))}
+                <Grid
+                  item
+                  sx={{
+                    wordWrap: "break-word",
+                  }}
+                >
+                  <Typography component="p" color={"grey"}>
+                    {question.summary}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Grid
+                    container
+                    spacing={2}
+                    direction="row"
+                    justifyContent="flex-start"
+                    alignItems="flex-start"
+                    sx={{}}
+                  >
+                    {question.tags.map((tag, index) => (
+                      <Grid item key={index}>
+                        <Button
+                          onClick={() => handleTagClick(tag.name)}
+                          type="button"
+                          variant="contained"
+                        >
+                          {" "}
+                          {tag.name}
+                        </Button>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item>
+              <Card sx={{ minWidth: 230, mb: 2 }}>
+                <CardContent>
+                  <Grid container spacing={2} direction={"column"}>
+                    <Grid item>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <Typography>
+                            {FormatDateText.formatDateText(question.ask_date)}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+
+                    <Grid item>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <PersonIcon />
+                        </Grid>
+                        <Grid item>
+                          <Typography>{question.asked_by.user_name}</Typography>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+
+                    <Grid item>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <VisibilityIcon />
+                        </Grid>
+                        <Grid item>
+                          <Typography>{question.views}</Typography>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+
+                    <Grid item>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <ThumbUpAltIcon />
+                        </Grid>
+
+                        <Grid item>
+                          <Typography>{question.upvotes}</Typography>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+
+                    <Grid item>
+                      <Grid container spacing={2} direction={"row"}>
+                        <Grid item>
+                          <QuestionAnswerIcon />
+                        </Grid>
+
+                        <Grid item>
+                          <Typography>{question.answers.length}</Typography>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
             </Grid>
           </Grid>
-        </Grid>
-      </Box>
+        </Paper>
+      </Container>{" "}
     </ThemeProvider>
   );
 }
 
-export default function QuestionDisplay({ questions }) {
+export default function QuestionDisplay({ questions, userPage = false }) {
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 5;
 
@@ -132,30 +208,71 @@ export default function QuestionDisplay({ questions }) {
   const totalPages = Math.ceil(questions.length / questionsPerPage);
 
   const handlePageChange = (event, pageNumber) => {
-    setCurrentPage(pageNumber);
+    if (pageNumber > totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage(pageNumber);
+    }
   };
 
+  const handleNext = () => {
+    if (currentPage === totalPages) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentPage === 1) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+  };
   return (
-    <div>
-      <Container
-        className="questionDisplay"
-        sx={{
-          mt: 10,
-          mr: 10,
-        }}
-      >
-        {currentQuestions.map((q, index) => (
-          <SingleQuestionContainer key={index} question={q} />
-        ))}
+    <>
+      <Box sx={{ height: 550, overflow: "auto" }}>
+        <Container sx={{}}>
+          <Paper
+            elevation={1}
+            sx={{ borderRadius: 2, paddingTop: 2, paddingBottom: 2 }}
+          >
+            {currentQuestions.map((q, index) => (
+              <SingleQuestionContainer
+                key={index}
+                question={q}
+                userPage={userPage}
+              />
+            ))}
+          </Paper>
+        </Container>
+      </Box>
+      <Container sx={{ mt: 1 }}>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          {currentPage === 1 ? (
+            <Button disabled onClick={handlePrev}>
+              <NavigateBeforeIcon />
+            </Button>
+          ) : (
+            <Button onClick={handlePrev}>
+              <NavigateBeforeIcon />
+            </Button>
+          )}
+          <Pagination
+            boundaryCount={2}
+            count={totalPages}
+            hidePrevButton
+            hideNextButton
+            onChange={handlePageChange}
+            page={currentPage}
+            sx={{ width: "100%" }}
+          />
+          <Button onClick={handleNext}>
+            <NavigateNextIcon />
+          </Button>
+        </Box>
       </Container>
-      <Pagination
-        boundaryCount={2}
-        count={totalPages}
-        hidePrevButton={currentPage === 1}
-        onChange={handlePageChange}
-        page={currentPage}
-        sx={{ ml: 50 }}
-      />
-    </div>
+    </>
   );
 }

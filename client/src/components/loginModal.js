@@ -10,30 +10,45 @@ import Alert from "@mui/material/Alert";
 import AuthContext from "./authContext";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 
 import Header from "./header";
 
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import QuestionContext from "./questionContext";
 
 export default function LoginModal({ username }) {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
   const [loginError, setLoginError] = useState(false);
+  const [error, setError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState(false);
   const { handleSubmit, control } = useForm();
   const authContext = useContext(AuthContext);
+  const questionContext = useContext(QuestionContext);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      if (authContext.isLoggedIn && authContext.userRole !== "guest") {
+        console.log(authContext);
+        navigate("/home");
+      }
+    };
+
+    checkLoginStatus();
+  }, [authContext.isLoggedIn, authContext.userRole, navigate]);
   const handleLogin = async (data) => {
     try {
       await axios.post("http://localhost:8000/login", data).then((response) => {
         if (response.status === 200) {
+          console.log(response);
           authContext.onLogin(response.data);
-          console.log(response.data);
+          questionContext.fetchAll();
           setLoginSuccess(true);
           navigate("/home");
-        } else {
+        } else if (response.status === 401) {
+          setError("Username or password incorrect - please try again");
           setLoginError(true);
         }
       });
@@ -47,7 +62,9 @@ export default function LoginModal({ username }) {
     try {
       await axios.post("http://localhost:8000/guest").then((response) => {
         if (response.status === 200) {
+          console.log(response.data);
           authContext.onLogin(response.data);
+          questionContext.fetchAll();
           navigate("/home");
         } else {
           setLoginError(true);
@@ -65,8 +82,7 @@ export default function LoginModal({ username }) {
   };
   return (
     <ThemeProvider theme={darkTheme}>
-      <Header loggedIn={false} />
-      <Container component="main" maxWidth="xs">
+      <Container className="login-modal" component="main" maxWidth="xs">
         <form onSubmit={handleSubmit(handleLogin)}>
           <Paper
             sx={{
@@ -154,18 +170,19 @@ export default function LoginModal({ username }) {
               type="button"
               variant="contained"
               onClick={handleGuestLogin}
-              sx={{ mt: 3, ml: 3 }}
+              sx={{ mt: 3, ml: 2 }}
             >
               Continue as Guest
             </Button>
           </Grid>
-          <Grid item>
-            <Link href="/sign-up" variant="body2" sx={{ ml: 2 }}>
+          <Grid item xs="auto">
+            <Link href="/sign-up" variant="body2" sx={{}}>
               {"Don't have an account? Sign Up"}
             </Link>
           </Grid>
         </Grid>
       </Container>
+
       <Snackbar
         open={loginSuccess}
         autoHideDuration={6000}
@@ -178,7 +195,7 @@ export default function LoginModal({ username }) {
 
       <Snackbar open={loginError} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-          Login Failed
+          Username or email incorrect - please try again
         </Alert>
       </Snackbar>
     </ThemeProvider>

@@ -6,8 +6,12 @@ const AuthContext = createContext({
   userId: null,
   userRole: null,
   allQuestions: [],
+  signUp: null,
   onLogin: () => {},
   onLogout: () => {},
-  onSort: () => {}
+  isLoading: false,
+  user: null,
+  reputation: 0,
+  refreshUserInfo: () => {},
 });
 export default AuthContext;

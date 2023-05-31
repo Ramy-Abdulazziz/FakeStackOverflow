@@ -1,24 +1,33 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useContext } from "react";
 import AuthContext from "./authContext";
 import axios from "axios";
+import QuestionContext from "./questionContext";
 export default function AuthContextProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [userId, setUserId] = useState("");
   const [userRole, setUserRole] = useState("");
-  const [allQuestions, setAllQuestions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [reputation, setReputation] = useState(0);
+  const [user, setUser] = useState(null);
+  const [signUp, setSignUp] = useState(new Date());
+  const questionContext = useContext(QuestionContext);
 
   useEffect(() => {
     const checkSession = async () => {
+      console.log("resetting user data");
       try {
         const response = await axios.get(
           "http://localhost:8000/validate-session"
         );
         setIsLoggedIn(response.data.isLoggedIn);
-
         if (response.data.userID) {
           setUserId(response.data.userID);
           setUserRole(response.data.userRole);
+          setReputation(response.data.reputation);
+          setUserName(response.data.userName);
+          setSignUp(response.data.signup);
+          setUser(response.data.user);
         } else if (response.data.userRole === "guest") {
           setUserId("0");
           setUserName("Guest");
@@ -26,6 +35,7 @@ export default function AuthContextProvider({ children }) {
         }
       } catch (err) {
         console.log("error fetching validation info", err);
+      } finally {
       }
     };
 
@@ -34,22 +44,13 @@ export default function AuthContextProvider({ children }) {
 
   const loginHandler = async (data) => {
     if (data.userRole !== "guest") {
+      console.log(data);
       setIsLoggedIn(true);
       setUserName(data.user_name);
       setUserId(data.userID);
       setUserRole(data.userRole);
-      try {
-        const response = await axios.get("http://localhost:8000/questions");
-        console.log("response", response.data);
-
-        setAllQuestions(
-          response.data.sort(
-            (a, b) => new Date(b.ask_date) - new Date(a.ask_date)
-          )
-        );
-      } catch (error) {
-        console.error("Error fetching questions:", error);
-      }
+      setReputation(data.reputation);
+      setUser(data.user);
     } else {
       setIsLoggedIn(true);
       setUserName("Guest");
@@ -58,50 +59,67 @@ export default function AuthContextProvider({ children }) {
     }
   };
 
+  const refreshUserInfo = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/validate-session"
+      );
+      setIsLoggedIn(response.data.isLoggedIn);
+      if (response.data.userID) {
+        setUserId(response.data.userID);
+        setUserRole(response.data.userRole);
+        setReputation(response.data.reputation);
+        setUserName(response.data.userName);
+        setSignUp(response.data.signup);
+        setUser(response.data.user);
+
+        questionContext.fetchUser(); 
+      } else if (response.data.userRole === "guest") {
+        setUserId("0");
+        setUserName("Guest");
+        setUserRole("guest");
+      }
+    } catch (err) {
+      console.log("error fetching validation info", err);
+    }
+  };
+
   const logoutHandler = async () => {
     try {
       await axios.post("http://localhost:8000/logout").then((response) => {
+        console.log(response.status);
         if (response.status === 200) {
           setIsLoggedIn(false);
           setUserName("");
           setUserId("");
           setUserRole("");
+          setReputation(0);
+          setUser(null);
         }
       });
     } catch (err) {
+      setIsLoading(false);
+
       console.error("unable to log out", err);
     }
   };
 
-  const handleSort = async (params) => {
-    console.log("sending request for " + params.sort);
-
-    try {
-      const response = await axios.get("http://localhost:8000/questions", {
-        params: params,
-      });
-      console.log("received" + response.data);
-
-      setAllQuestions(response.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const contextValue = useMemo(
-    () => ({
-      isLoggedIn: isLoggedIn,
-      userName: userName,
-      userId: userId,
-      userRole: userRole,
-      allQuestions: allQuestions,
-      onLogin: loginHandler,
-      onLogout: logoutHandler,
-      onSort: handleSort,
-    }),
-    [isLoggedIn, userName, userId, userRole, allQuestions]
-  );
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        isLoggedIn: isLoggedIn,
+        userName: userName,
+        userId: userId,
+        userRole: userRole,
+        reputation: reputation,
+        user: user,
+        signUp: signUp,
+        refreshUserInfo: refreshUserInfo,
+        onLogin: loginHandler,
+        onLogout: logoutHandler,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 }

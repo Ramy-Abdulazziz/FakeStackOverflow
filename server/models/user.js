@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
   user_name: { type: String, required: true, maxlength: 50 },
+  email: { type: String, required: true },
   questions: [{ type: Schema.Types.ObjectId, ref: "Question" }],
   answers: [{ type: Schema.Types.ObjectId, ref: "Answer" }],
   tags: [{ type: Schema.Types.ObjectId, ref: "Tag" }],

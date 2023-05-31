@@ -16,6 +16,7 @@ const Tag = require("./models/tags");
 const User = require("./models/user");
 
 const mongoose = require("mongoose");
+
 const mongoDB = userArgs[0];
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -90,18 +91,26 @@ async function commentCreate(text, created_by, parent, parent_type, upvotes) {
     text: text,
     created_by: created_by,
     parent: parent,
-    parent_type: parent_type,
+    parentType: parent_type,
     upvotes: upvotes,
   };
   const comment = new Comment(commentDetails);
   return comment.save();
 }
-async function answerCreate(text, ans_by, comments, ans_date_time, upvotes) {
+async function answerCreate(
+  text,
+  ans_by,
+  comments,
+  ans_date_time,
+  upvotes,
+  question
+) {
   const answerdetail = {
     text: text,
     ans_by: ans_by,
     comments: comments,
     upvotes: upvotes,
+    question: question,
   };
   if (ans_by != false) answerdetail.ans_by = ans_by;
   if (ans_date_time != false) answerdetail.ans_date_time = ans_date_time;
@@ -195,8 +204,8 @@ const populate = async () => {
     5
   );
 
-  const ans1 = await answerCreate("Answer 1", u1._id, [], false, 10);
-  const ans2 = await answerCreate("Answer 2", u2._id, [], false, 5);
+  const ans1 = await answerCreate("Answer 1", u1._id, [], false, 10, q1._id);
+  const ans2 = await answerCreate("Answer 2", u2._id, [], false, 5, q2._id);
 
   q2.answers.push(ans2);
   q1.answers.push(ans1);
@@ -239,15 +248,6 @@ const populate = async () => {
   await t3.save();
   await t4.save();
 
-  return [u1, u3, ans1, q2];
-};
-
-const addComments = async (toComment) => {
-  let u1 = toComment[0];
-  let u3 = toComment[1];
-  let ans1 = toComment[2];
-  let q2 = toComment[3];
-
   const comment1 = await commentCreate(
     "This is helpful",
     u1._id,
@@ -263,8 +263,44 @@ const addComments = async (toComment) => {
     50
   );
 
+  const comment3 = await commentCreate(
+    "This has already been asked",
+    u3._id,
+    q2._id,
+    "Question",
+    50
+  );
+
+  const comment4 = await commentCreate(
+    "This has already been asked",
+    u3._id,
+    q2._id,
+    "Question",
+    50
+  );
+
+  const comment5 = await commentCreate(
+    "This has already been asked",
+    u3._id,
+    q2._id,
+    "Question",
+    50
+  );
+
+  const comment6 = await commentCreate(
+    "This has already been asked",
+    u3._id,
+    q2._id,
+    "Question",
+    50
+  );
+
   await comment1.save();
   await comment2.save();
+  await comment3.save();
+  await comment4.save();
+  await comment5.save();
+  await comment6.save();
 
   ans1.comments.push(comment1._id);
   q2.comments.push(comment2._id);
@@ -276,32 +312,13 @@ const addComments = async (toComment) => {
   await u2.save();
   await ans1.save();
   await q2.save();
-};
-const populateComments = async () => {
-  let questions = await populate()
-    .then(() => {
-      console.log("Database populated successfully!");
-    })
-    .catch((err) => {
-      console.log("ERROR in database pop: " + err);
-    });
-  return questions;
+
+  console.log("done");
 };
 
-let toComment = populateComments()
-  .then(() => {
-    console.log("Added all questions and comments succesfully");
-  })
-  .catch((err) => {
-    console.log("Error : " + err);
-  });
+populate().catch((err) => {
+  console.log("ERROR: " + err);
+  if (db) db.close();
+});
 
-addComments(toComment)
-  .then(() => {
-    console.log("comments populated successfully!");
-    db.close();
-
-  })
-  .catch((err) => {
-    console.log("ERROR in comments: " + err);
-  });
+console.log("processing ...");
