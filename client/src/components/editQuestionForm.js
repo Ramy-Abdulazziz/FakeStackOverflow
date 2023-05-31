@@ -22,6 +22,7 @@ import AuthContext from "./authContext";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import QuestionContext from "./questionContext";
+import AdminContext from "./adminContext";
 
 const validateLinks = (bodyText) => {
   let linkRegex = new RegExp("\\[([^\\s\\]]+)\\]\\((.*?)\\)", "g");
@@ -127,7 +128,7 @@ const QuestionForm = () => {
   const [userTags, setUserTags] = useState([]);
   const [questionDetails, setQuestionDetails] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const adminContext = useContext(AdminContext);
   const questionContext = useContext(QuestionContext);
   const navigate = useNavigate();
   const { id } = useParams();
@@ -195,6 +196,7 @@ const QuestionForm = () => {
 
     console.log(updatedQInfo);
     questionContext.handleEdit(updatedQInfo);
+    adminContext.refreshUser();
     navigate("/home");
   };
 
@@ -210,6 +212,8 @@ const QuestionForm = () => {
 
   const handleDelete = async () => {
     questionContext.handleDelete(id);
+    adminContext.refreshUser();
+
     navigate("/home");
   };
   return loading ? (

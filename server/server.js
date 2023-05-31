@@ -424,7 +424,10 @@ app.delete("/question/:id/delete", async (req, res) => {
     // Delete all answers and their comments
     for (let answerId of question.answers) {
       const answer = await Answer.findById(answerId);
-
+      await User.updateMany(
+        { answers: { $in: [answerId] } },
+        { $pull: { answers: answerId } }
+      );
       // Delete all comments of each answer
       for (let commentId of answer.comments) {
         // Remove comment id from user's comments array
@@ -432,7 +435,10 @@ app.delete("/question/:id/delete", async (req, res) => {
           user.comments.pull(commentId);
           await user.save();
         }
-
+        await User.updateMany(
+          { comments: { $in: [commentId] } },
+          { $pull: { comments: commentId } }
+        );
         await Comment.findByIdAndRemove(commentId);
       }
 
@@ -446,7 +452,10 @@ app.delete("/question/:id/delete", async (req, res) => {
         user.comments.pull(commentId);
         await user.save();
       }
-
+      await User.updateMany(
+        { comments: { $in: [commentId] } },
+        { $pull: { comments: commentId } }
+      );
       await Comment.findByIdAndRemove(commentId);
     }
 
@@ -470,6 +479,10 @@ app.delete("/question/:id/delete", async (req, res) => {
         }
       }
     }
+    await User.updateMany(
+      { questions: { $in: [question._id] } },
+      { $pull: { questions: question._id } }
+    );
 
     // Finally, delete the question itself
     await Question.findByIdAndRemove(id);
@@ -1273,6 +1286,11 @@ app.delete("/admin/:id/delete", async (req, res) => {
         await Answer.findByIdAndRemove(answer._id);
       }
 
+      await User.updateMany(
+        { questions: { $in: [question._id] } },
+        { $pull: { questions: question._id } }
+      );
+
       // Delete the question itself
       await Question.findByIdAndRemove(question._id);
     }
@@ -1331,7 +1349,14 @@ app.delete("/admin/:id/delete", async (req, res) => {
   }
 });
 
-app.get("/admin/user/:id", async (req, res) => {});
+app.get("/admin/user/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ message: "server error" });
+  }
+});
 
 // Handle server termination
 process.on("SIGINT", function () {

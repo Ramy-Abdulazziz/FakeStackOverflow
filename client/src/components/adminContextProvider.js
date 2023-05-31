@@ -10,7 +10,9 @@ export default function AdminContextProvider({ children }) {
   const [handlingUser, setHandlingUser] = useState(null);
   const [userId, setUserId] = useState("");
   const [showAdminOption, setShowAdminOptions] = useState(false);
+  const [userQuestions, setUserQuestions] = useState([]);
   const authContext = useContext(AuthContext);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   const onLogin = async () => {
     setUserId(authContext.userId);
@@ -46,6 +48,42 @@ export default function AdminContextProvider({ children }) {
     }
   };
 
+  const getUserQuestions = async () => {
+    try {
+      setLoadingQuestions(true);
+      console.log(authContext.userId);
+      const response = await axios.get(
+        `http://localhost:8000/questions/user/${handlingUserID}`
+      );
+      console.log(response);
+      setUserQuestions(
+        response.data.sort(
+          (a, b) => new Date(b.ask_date) - new Date(a.ask_date)
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
+  const refreshUser = async () => {
+    if (handlingUser === null) {
+      return;
+    }
+
+    try{
+      const user = await axios.get(`http://localhost:8000/admin/user/${handlingUserID}`)
+      setHandlingUser(user); 
+      getUserQuestions();
+
+    }catch(err){
+
+      console.log(err); 
+    }
+  };
+
   return (
     <AdminContext.Provider
       value={{
@@ -54,9 +92,13 @@ export default function AdminContextProvider({ children }) {
         handlingUsername: handlingUsername,
         handlingUserID: handlingUserID,
         showAdminOption: showAdminOption,
+        loadingQuestions: loadingQuestions,
+        userQuestions: userQuestions,
+        refreshUser: refreshUser,
         onUserClick: onUserClick,
         deleteUser: deleteUser,
         onLogin: onLogin,
+        fetchUser: getUserQuestions,
       }}
     >
       {children}

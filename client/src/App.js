@@ -31,6 +31,7 @@ import EditQuestionForm from "./components/editQuestionForm";
 import DetailedQuestionEditPage from "./components/detailedQuestionEdit";
 import AdminProfile from "./components/adminProfile";
 import AdminContextProvider from "./components/adminContextProvider";
+import AdminUserProfile from "./components/adminUserProfile";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -74,7 +75,35 @@ function App() {
                       path="/user/:id/answers"
                       element={<DetailedQuestionEditPage />}
                     />
-                    <Route path="/admin/:id//" element={<AdminProfile />} />
+                     <Route
+                      path="/admin/:id"
+                      element={<AdminProfile />}
+                    />
+                    <Route
+                      path="/admin/user/:id/profile"
+                      element={<AdminUserProfile />}
+                    />
+
+                    <Route
+                      path="/admin/user/:id/profile"
+                      element={<AdminProfile />}
+                    />
+                    <Route
+                      path="/admin/user/:id/tags"
+                      element={<AdminProfile />}
+                    />
+                    <Route
+                      path="/admin/user/edit/:id"
+                      element={<AdminProfile />}
+                    />
+                    <Route
+                      path="/admin/user/:id/questions"
+                      element={<AdminProfile />}
+                    />
+                    <Route
+                      path="/admin/user/:id/questions"
+                      element={<AdminProfile />}
+                    />
                   </Routes>
                 </Container>
               </Box>

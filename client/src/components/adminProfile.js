@@ -19,17 +19,15 @@ import QuestionContext from "./questionContext";
 import FormatDateText from "../dateTextUtils";
 import LiveHelpIcon from "@mui/icons-material/LiveHelp";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
-import QuestionDisplay from "./questionDisplay";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import { useState, useEffect } from "react";
-import { Link, useActionData } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import AdminContext from "./adminContext";
 
@@ -103,7 +101,7 @@ function Users() {
           {users.map((u) => (
             <TableRow key={u._id}>
               <TableCell>
-                <Link onClick={() => handleUserClick(u)}>
+                <Link to={`/admin/user/${u._id}/profile`} onClick={() => handleUserClick(u)}>
                   <Typography variant="h5"> {u.user_name}</Typography>
                 </Link>
               </TableCell>
