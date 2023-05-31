@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-
+const adminDetails = process.argv.slice(3);
 const userArgs = process.argv.slice(2);
 
 if (!userArgs[0].startsWith("mongodb")) {
@@ -127,7 +127,7 @@ const populate = async () => {
 
   const u1p = await bcrypt.hash("password", 10);
   const u2p = await bcrypt.hash("password", 10);
-  const u3p = await bcrypt.hash("password", 10);
+  const u3p = await bcrypt.hash(adminDetails[1], 10);
 
   const u1 = await userCreate(
     "sunny",
@@ -154,8 +154,8 @@ const populate = async () => {
   );
 
   const u3 = await userCreate(
-    "safeer",
-    "saf@gmail.com",
+    adminDetails[0],
+    "admin@gmail.com",
     [],
     [],
     [],
@@ -229,6 +229,20 @@ const populate = async () => {
 
   u1.answers.push(ans1._id);
   u2.answers.push(ans2._id);
+
+  t1.used_by.push = u1;
+  t1.used_by.push = u2;
+  t1.used_by.push = u3;
+
+  t2.used_by.push = u2;
+  t2.used_by.push = u3;
+
+  t3.used_by.push = u2;
+  t3.used_by.push = u3;
+
+  t2.created_by = u2._id;
+  t3.created_by = u3._id;
+  t4.created_by = u3._id;
 
   await u1.save();
   await u2.save();
@@ -313,12 +327,17 @@ const populate = async () => {
   await ans1.save();
   await q2.save();
 
-  console.log("done");
+  console.log(`admin details are user: ${adminDetails[0]}, pass: ${adminDetails[1]}`);
 };
 
-populate().catch((err) => {
-  console.log("ERROR: " + err);
-  if (db) db.close();
-});
+populate()
+  .then(() => {
+    console.log("Done populating data");
+    mongoose.connection.close();  // close the connection here
+  })
+  .catch((err) => {
+    console.log("ERROR: " + err);
+    mongoose.connection.close();
+  });
 
 console.log("processing ...");

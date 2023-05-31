@@ -2,7 +2,7 @@ import Pagination from "@mui/material/Pagination";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { Link, useActionData } from "react-router-dom";
+import { Link} from "react-router-dom";
 import Paper from "@mui/material/Paper";
 import { Card, CardContent } from "@mui/material";
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
@@ -15,12 +15,10 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Container, Grid } from "@mui/material";
 import { useContext, useState } from "react";
 import FormatDateText from "../dateTextUtils";
-import { useEffect } from "react";
 import axios from "axios";
 import QuestionContext from "./questionContext";
-import AuthContext from "./authContext";
 
-function SingleQuestionContainer({ question, userPage }) {
+function SingleQuestionContainer({ question, userPage, adminPage }) {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
   const questionContext = useContext(QuestionContext);
 
@@ -83,6 +81,8 @@ function SingleQuestionContainer({ question, userPage }) {
                     to={
                       userPage
                         ? `/user/${question._id}/answers`
+                        : adminPage
+                        ? `/admin/user/${question._id}/answers`
                         : `/answers/${question._id}`
                     }
                   >
@@ -194,7 +194,11 @@ function SingleQuestionContainer({ question, userPage }) {
   );
 }
 
-export default function QuestionDisplay({ questions, userPage = false }) {
+export default function QuestionDisplay({
+  questions,
+  userPage = false,
+  adminPage = false,
+}) {
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 5;
 
@@ -243,6 +247,7 @@ export default function QuestionDisplay({ questions, userPage = false }) {
                 key={index}
                 question={q}
                 userPage={userPage}
+                adminPage={adminPage}
               />
             ))}
           </Paper>

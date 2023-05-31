@@ -32,6 +32,10 @@ import DetailedQuestionEditPage from "./components/detailedQuestionEdit";
 import AdminProfile from "./components/adminProfile";
 import AdminContextProvider from "./components/adminContextProvider";
 import AdminUserProfile from "./components/adminUserProfile";
+import AdminUserAnsweredPage from "./components/adminUserAnswers";
+import AdminDetailedQuestionEditPage from "./components/adminDetailedQuestionEdit";
+import AdminContext from "./components/adminContext";
+import AdminUserTagsPage from "./components/adminUserTags";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -75,34 +79,24 @@ function App() {
                       path="/user/:id/answers"
                       element={<DetailedQuestionEditPage />}
                     />
-                     <Route
-                      path="/admin/:id"
-                      element={<AdminProfile />}
-                    />
+                    <Route path="/admin/:id" element={<AdminProfile />} />
                     <Route
                       path="/admin/user/:id/profile"
                       element={<AdminUserProfile />}
                     />
 
                     <Route
-                      path="/admin/user/:id/profile"
-                      element={<AdminProfile />}
-                    />
-                    <Route
                       path="/admin/user/:id/tags"
-                      element={<AdminProfile />}
+                      element={<AdminUserTagsPage />}
                     />
-                    <Route
-                      path="/admin/user/edit/:id"
-                      element={<AdminProfile />}
-                    />
+
                     <Route
                       path="/admin/user/:id/questions"
-                      element={<AdminProfile />}
+                      element={<AdminUserAnsweredPage />}
                     />
-                    <Route
-                      path="/admin/user/:id/questions"
-                      element={<AdminProfile />}
+                      <Route
+                      path="/admin/user/:id/answers"
+                      element={<AdminDetailedQuestionEditPage />}
                     />
                   </Routes>
                 </Container>

@@ -69,7 +69,7 @@ function SingleTagContainer({ tag }) {
       const response = await axios.get(
         `http://localhost:8000/tags/${changedName}/usedby`
       );
-
+      console.log(response);
       if (response.status === 200) {
         setIsEditing(true);
       }
@@ -261,6 +261,7 @@ function SingleTagContainer({ tag }) {
 export default function UserTagsPage() {
   const [tagsArray, setTags] = useState([]);
   const [isLoading, setLoading] = useState(true);
+  const authContext = useContext(AuthContext);
   const { id } = useParams();
 
   useEffect(() => {
@@ -289,7 +290,7 @@ export default function UserTagsPage() {
           sx={{ ml: "auto", mr: "auto", width: 300, color: "white" }}
         >
           {" "}
-          User Tags{" "}
+          {authContext.userName}'s Tags{" "}
         </Typography>
       </Container>
       <Container sx={{ mt: 10 }}>

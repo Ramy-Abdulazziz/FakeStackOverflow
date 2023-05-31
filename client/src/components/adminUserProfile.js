@@ -86,7 +86,7 @@ function UserHeader() {
   const adminContext = useContext(AdminContext);
   useEffect(() => {
     const getUserQuestion = async () => {
-      adminContext.refreshUserInfo();
+    //   adminContext.refreshUser();
     };
 
     getUserQuestion();

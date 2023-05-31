@@ -77,6 +77,16 @@ export default function MenuDrawer({ open, setOpen }) {
     navigate(`/admin/${userId}`);
   };
 
+  const navigateAdminUserQuestions = async () => {
+    const userId = adminContext.handlingUserID; 
+    navigate(`/admin/user/${userId}/questions`);
+  };
+
+  const navigateAdminUserTags = async () => {
+    const userId = adminContext.handlingUserID; 
+    navigate(`/admin/user/${userId}/tags`);
+  };
+
   const navigateUserTags = async () => {
     const userId = authContext.userId;
     navigate(`/user/${userId}/tags`);
@@ -91,18 +101,18 @@ export default function MenuDrawer({ open, setOpen }) {
     <List>
       <Divider />
       <ListItem disablePadding>
-        <ListItemButton onClick={navigateUserQuestions}>
+        <ListItemButton onClick={navigateAdminUserQuestions}>
           <ListItemIcon>
             <LiveHelpIcon />
           </ListItemIcon>
           <ListItemText
-            primary={`${adminContext.handlingUsername} Answered Questions`}
+            primary={`${adminContext.handlingUsername}'s Answered Questions`}
           />
         </ListItemButton>
       </ListItem>
 
       <ListItem disablePadding>
-        <ListItemButton onClick={navigateUserTags}>
+        <ListItemButton onClick={navigateAdminUserTags}>
           <ListItemIcon>
             <StyleIcon />
           </ListItemIcon>

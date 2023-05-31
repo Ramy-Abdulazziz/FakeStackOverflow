@@ -1,7 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import AuthContext from "./authContext";
 import axios from "axios";
-import QuestionContext from "./questionContext";
 import AdminContext from "./adminContext";
 
 export default function AdminContextProvider({ children }) {
@@ -73,14 +72,14 @@ export default function AdminContextProvider({ children }) {
       return;
     }
 
-    try{
-      const user = await axios.get(`http://localhost:8000/admin/user/${handlingUserID}`)
-      setHandlingUser(user); 
+    try {
+      const user = await axios.get(
+        `http://localhost:8000/admin/user/${handlingUserID}`
+      );
+      setHandlingUser(user);
       getUserQuestions();
-
-    }catch(err){
-
-      console.log(err); 
+    } catch (err) {
+      console.log(err);
     }
   };
 
