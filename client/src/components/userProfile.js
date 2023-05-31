@@ -30,15 +30,14 @@ import { useState, useEffect } from "react";
 import { Link, useActionData } from "react-router-dom";
 
 function UserQuestions() {
-  const authContext = useContext(AuthContext);
   const questionContext = useContext(QuestionContext);
   const [userQuestions, setUserQuestions] = useState([]);
   const [open, setOpen] = useState(false);
 
+
   useEffect(() => {
     const getUserQuestion = async () => {
       questionContext.fetchUser();
-      console.log(questionContext.userQuestions);
       setUserQuestions(questionContext.userQuestions);
       setOpen(questionContext.userQuestions.length === 0);
     };
@@ -86,8 +85,8 @@ function UserQuestions() {
 
 function UserHeader() {
   const authContext = useContext(AuthContext);
-  const questionContext = useContext(QuestionContext);
 
+  
   const stringAvatar = (name) => {
     return {
       sx: {
@@ -191,9 +190,11 @@ function UserHeader() {
 }
 export default function UserProfile() {
   const authContext = useContext(AuthContext);
-  const questionContext = useContext(QuestionContext);
-  const [loading, setLoading] = useState(false);
-
+  const questionContext = useContext(QuestionContext); 
+  useEffect(() => {
+    authContext.refreshUserInfo();
+    questionContext.fetchUser(); 
+  }, []);
   return authContext.user === null ? (
     <Skeleton variant="square">
       {" "}

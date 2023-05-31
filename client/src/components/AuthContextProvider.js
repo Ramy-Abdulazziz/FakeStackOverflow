@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import AuthContext from "./authContext";
 import axios from "axios";
 import QuestionContext from "./questionContext";
@@ -28,7 +28,6 @@ export default function AuthContextProvider({ children }) {
           setUserName(response.data.userName);
           setSignUp(response.data.signup);
           setUser(response.data.user);
-
         } else if (response.data.userRole === "guest") {
           setUserId("0");
           setUserName("Guest");
@@ -51,12 +50,37 @@ export default function AuthContextProvider({ children }) {
       setUserId(data.userID);
       setUserRole(data.userRole);
       setReputation(data.reputation);
-      setUser(data.user)
+      setUser(data.user);
     } else {
       setIsLoggedIn(true);
       setUserName("Guest");
       setUserId("0");
       setUserRole("guest");
+    }
+  };
+
+  const refreshUserInfo = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/validate-session"
+      );
+      setIsLoggedIn(response.data.isLoggedIn);
+      if (response.data.userID) {
+        setUserId(response.data.userID);
+        setUserRole(response.data.userRole);
+        setReputation(response.data.reputation);
+        setUserName(response.data.userName);
+        setSignUp(response.data.signup);
+        setUser(response.data.user);
+
+        questionContext.fetchUser(); 
+      } else if (response.data.userRole === "guest") {
+        setUserId("0");
+        setUserName("Guest");
+        setUserRole("guest");
+      }
+    } catch (err) {
+      console.log("error fetching validation info", err);
     }
   };
 
@@ -90,6 +114,7 @@ export default function AuthContextProvider({ children }) {
         reputation: reputation,
         user: user,
         signUp: signUp,
+        refreshUserInfo: refreshUserInfo,
         onLogin: loginHandler,
         onLogout: logoutHandler,
       }}

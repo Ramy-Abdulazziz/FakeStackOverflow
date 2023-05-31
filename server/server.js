@@ -271,7 +271,7 @@ app.put("user/:id/decrease/:amount/", async (req, res) => {
     const decrease = req.params.amount;
     const updatedUser = User.findByIdAndUpdate(
       userId,
-      { $inc: { reputation: -decrease } },
+      { $inc: { reputation: decrease * -1 } },
       { new: true }
     );
 
@@ -329,6 +329,12 @@ app.post("/submit/question", async (req, res) => {
     };
     const newQuestion = new Question(newQuestionDetails);
     await newQuestion.save();
+
+    const updatedUser = await User.findByIdAndUpdate(
+      questionData.user,
+      { $push: { questions: newQuestion._id } },
+      { new: true }
+    );
     res
       .status(201)
       .json({ message: "Question added successfully", newQuestion });

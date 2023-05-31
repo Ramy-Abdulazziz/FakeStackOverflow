@@ -41,6 +41,8 @@ const validateLinks = (bodyText) => {
   return valid;
 };
 const splitTags = (tags) => {
+  if (tags === null || tags === "" || tags === undefined) return [];
+
   let splitTags = Array.from(tags.match(new RegExp("[^\\b\\s+]+", "g")));
 
   return splitTags;
@@ -158,6 +160,7 @@ const QuestionForm = () => {
 
     console.log(newQInfo);
     questionContext.handleAdd(newQInfo);
+    authContext.refreshUserInfo(); 
     navigate("/home");
   };
 
