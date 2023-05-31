@@ -9,7 +9,7 @@ import LiveHelpIcon from "@mui/icons-material/LiveHelp";
 import StyleIcon from "@mui/icons-material/Style";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
-import LoginIcon from '@mui/icons-material/Login';
+import LoginIcon from "@mui/icons-material/Login";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { Divider } from "@mui/material";
@@ -17,16 +17,21 @@ import { useContext, useEffect, useState } from "react";
 import AuthContext from "./authContext";
 import { useNavigate } from "react-router";
 import QuestionContext from "./questionContext";
+import AdminContext from "./adminContext";
 
 export default function MenuDrawer({ open, setOpen }) {
   const [userName, setUserName] = useState("");
   const authContext = useContext(AuthContext);
   const questionContext = useContext(QuestionContext);
+  const adminContext = useContext(AdminContext);
   const navigate = useNavigate();
 
   useEffect(() => {
     const getUserStatus = async () => {
       if (authContext.isLoggedIn && authContext.userRole !== "guest") {
+        console.log("user authcontrext");
+
+        console.log(authContext);
         setUserName(authContext.userName);
       }
     };
@@ -66,6 +71,12 @@ export default function MenuDrawer({ open, setOpen }) {
     navigate(`/user/${userId}`);
   };
 
+  const navigateAdminProfile = async () => {
+    const userId = authContext.userId;
+    authContext.refreshUserInfo();
+    navigate(`/admin/${userId}`);
+  };
+
   const navigateUserTags = async () => {
     const userId = authContext.userId;
     navigate(`/user/${userId}/tags`);
@@ -76,10 +87,40 @@ export default function MenuDrawer({ open, setOpen }) {
     navigate(`/user/${userId}/questions`);
   };
 
+  const adminOptions = () => (
+    <List>
+      <Divider />
+      <ListItem disablePadding>
+        <ListItemButton onClick={navigateUserQuestions}>
+          <ListItemIcon>
+            <LiveHelpIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary={`${adminContext.handlingUsername} Answered Questions`}
+          />
+        </ListItemButton>
+      </ListItem>
+
+      <ListItem disablePadding>
+        <ListItemButton onClick={navigateUserTags}>
+          <ListItemIcon>
+            <StyleIcon />
+          </ListItemIcon>
+          <ListItemText primary={`${adminContext.handlingUsername}'s Tags`} />
+        </ListItemButton>
+      </ListItem>
+    </List>
+  );
   const userOptions = () => (
     <List>
       <ListItem disablePadding>
-        <ListItemButton onClick={navigateUserProfile}>
+        <ListItemButton
+          onClick={
+            authContext.userRole === "admin"
+              ? navigateAdminProfile
+              : navigateUserProfile
+          }
+        >
           <ListItemIcon>
             <AccountCircleIcon />
           </ListItemIcon>
@@ -141,9 +182,7 @@ export default function MenuDrawer({ open, setOpen }) {
             <ListItemText primary={"End Guest Session"} />
           </ListItemButton>
         </ListItem>
-      ) : (
-        null
-      )}
+      ) : null}
     </List>
   );
 
@@ -182,7 +221,10 @@ export default function MenuDrawer({ open, setOpen }) {
             </ListItemIcon>
           </ListItemButton>
         </ListItem>
-        {authContext.userRole === "guest" ?  guestOptions() : userOptions()}
+        {authContext.userRole === "guest" || authContext.isLoggedIn === false
+          ? guestOptions()
+          : userOptions()}
+        {adminContext.showAdminOption ? adminOptions() : null}
         <Divider />
         {authContext.isLoggedIn === true ? allOptions() : null}
       </List>
