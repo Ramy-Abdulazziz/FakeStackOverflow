@@ -260,10 +260,10 @@ function UserHeader() {
 }
 export default function AdminProfile() {
   const authContext = useContext(AuthContext);
-  const questionContext = useContext(QuestionContext);
+  // const questionContext = useContext(QuestionContext);
   useEffect(() => {
-    authContext.refreshUserInfo();
-    questionContext.fetchUser();
+    // authContext.refreshUserInfo();
+    // questionContext.fetchUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return authContext.user === null ? (

@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import AuthContext from "./authContext";
 import axios from "axios";
 import QuestionContext from "./questionContext";
+import AdminContext from "./adminContext";
 export default function AuthContextProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
@@ -12,6 +13,7 @@ export default function AuthContextProvider({ children }) {
   const [user, setUser] = useState(null);
   const [signUp, setSignUp] = useState(new Date());
   const questionContext = useContext(QuestionContext);
+  const adminContext = useContext(AdminContext); 
 
   useEffect(() => {
     const checkSession = async () => {
@@ -91,6 +93,7 @@ export default function AuthContextProvider({ children }) {
         setUserId("");
         setUserRole("");
         setReputation(0);
+        adminContext.exitMenu(); 
         setUser(null);
       }
 
