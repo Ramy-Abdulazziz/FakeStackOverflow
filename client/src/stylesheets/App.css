@@ -39,3 +39,21 @@ html {
   margin: auto;
   align-items: center;
 }
+
+
+.questionText {
+  font-size: 2.125rem;
+  font-weight: 400;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  line-height: 1.235;
+  letter-spacing: 0.00735em;
+}
+
+
+.answerText {
+  font-size: 1.125rem;
+  font-weight: 400;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  line-height: 1.235;
+  letter-spacing: 0.00735em;
+}
