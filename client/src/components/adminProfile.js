@@ -18,7 +18,6 @@ import AuthContext from "./authContext";
 import QuestionContext from "./questionContext";
 import FormatDateText from "../dateTextUtils";
 import LiveHelpIcon from "@mui/icons-material/LiveHelp";
-import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import Table from "@mui/material/Table";
 import TableCell from "@mui/material/TableCell";
@@ -47,22 +46,31 @@ function Users() {
       const allUsers = await axios.get(
         `http://localhost:8000/admin/${authContext.userId}/users`
       );
+      console.log(allUsers);
       setUsers(allUsers.data);
       setOpen(allUsers.data.length === 0);
     };
 
     getUsers();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authContext.isLoading]);
 
   const handleUserClick = async (id) => {
     adminContext.onUserClick(id);
-    console.log(adminContext);
   };
   const handleDelete = async (id) => {
     try {
+      if (id === authContext.userId) {
+        setError("You cant delete yourself!");
+        setOpenError(true);
+        return;
+      }
       const response = await adminContext.deleteUser(id);
-      console.log(response.status);
+      if (response === undefined) {
+        setSuccess("Deletion Cancelled");
+        setOpenSuccess(true);
+        return;
+      }
       if (response.status === 200) {
         setSuccess("User deleted successfully");
         setOpenSuccess(true);
@@ -72,17 +80,16 @@ function Users() {
         );
         setUsers(allUsers.data);
         setOpen(allUsers.data.length === 0);
-        questionContext.fetchAll(); 
+        questionContext.fetchAll();
         questionContext.fetchUser();
-        authContext.refreshUserInfo(); 
-
+        authContext.refreshUserInfo();
       } else {
         setError("Unable to delete user");
-        setOpenError(true); 
+        setOpenError(true);
       }
     } catch (error) {
       setError("Unable to delete user");
-      setOpenError(true); 
+      setOpenError(true);
 
       console.error(error);
     }
@@ -96,13 +103,16 @@ function Users() {
               <TableCell>
                 <Typography variant="h4"> All Users</Typography>{" "}
               </TableCell>
-              <TableCell></TableCell>
+              <TableCell>{""}</TableCell>
             </TableRow>
           </TableHead>
           {users.map((u) => (
             <TableRow key={u._id}>
               <TableCell>
-                <Link to={`/admin/user/${u._id}/profile`} onClick={() => handleUserClick(u)}>
+                <Link
+                  to={`/admin/user/${u._id}/profile`}
+                  onClick={() => handleUserClick(u)}
+                >
                   <Typography variant="h5"> {u.user_name}</Typography>
                 </Link>
               </TableCell>
@@ -231,20 +241,6 @@ function UserHeader() {
                     </Grid>
 
                     <Grid item>
-                      <Grid container spacing={2} direction={"row"}>
-                        <Grid item>
-                          <QuestionAnswerIcon fontSize="large" />
-                        </Grid>
-
-                        <Grid item>
-                          <Typography variant={"h5"}>
-                            {authContext.user.answers.length}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Grid>
-
-                    <Grid item>
                       <Stack direction={"row"} spacing={2}>
                         <EmojiEmotionsIcon fontSize="large" />
                         <Typography variant="h5">
@@ -268,7 +264,7 @@ export default function AdminProfile() {
   useEffect(() => {
     authContext.refreshUserInfo();
     questionContext.fetchUser();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return authContext.user === null ? (
     <Skeleton variant="square">

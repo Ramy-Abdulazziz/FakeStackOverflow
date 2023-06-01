@@ -47,7 +47,6 @@ function SingleTagContainer({ tag }) {
         );
 
         setTagQuestions(tagQuestions.data);
-        console.log(tagQuestions.data);
       } catch (err) {
         console.log(err);
       }

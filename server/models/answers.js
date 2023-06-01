@@ -14,5 +14,4 @@ AnswerSchema.virtual("url").get(function () {
   return `posts/answer/${this._id}`;
 });
 
-
 module.exports = mongoose.model("Answer", AnswerSchema);

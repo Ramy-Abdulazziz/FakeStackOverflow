@@ -221,7 +221,6 @@ function SingleAnswer({ answer }) {
         const ans = await axios.get(
           `http://localhost:8000/answer/${answer._id}`
         );
-        console.log(ans);
         setAnswer(ans.data);
       } catch (err) {
         console.log(err);
@@ -248,7 +247,6 @@ function SingleAnswer({ answer }) {
           { user: authContext.userId }
         );
         // After successfully upvoting, fetch the updated comment data.
-        console.log(updatedAnswer.data);
         setAnswer(updatedAnswer.data);
       } catch (err) {
         console.error(err);
@@ -273,7 +271,6 @@ function SingleAnswer({ answer }) {
           { user: authContext.userId }
         );
         // After successfully upvoting, fetch the updated comment data.
-        console.log(updatedAnswer.data);
         setAnswer(updatedAnswer.data);
       } catch (err) {
         console.error(err);
@@ -295,7 +292,6 @@ function SingleAnswer({ answer }) {
   };
 
   const emptyCheck = (content) => {
-    console.log(content.replace(new RegExp("\\s+", "g"), ""));
 
     return content.replace(new RegExp("\\s+", "g"), "") === "";
   };
@@ -316,7 +312,6 @@ function SingleAnswer({ answer }) {
       });
     }
 
-    console.log(valid);
     return valid;
   };
 
@@ -326,7 +321,6 @@ function SingleAnswer({ answer }) {
 
   // Add a function to handle editing
   const handleEdit = async () => {
-    console.log(newAnswer);
     if (validateText(newAnswer) === false) {
       setErrorMessage("Please provide valid answer text");
       setOpen(true);
@@ -609,7 +603,6 @@ function SingleComment({ comment }) {
           { user: authContext.userId }
         );
         // After successfully upvoting, fetch the updated comment data.
-        console.log(updatedComment.data);
         setComment(updatedComment.data);
       } catch (err) {
         console.error(err);
@@ -911,7 +904,6 @@ function QuestionHeader({ question }) {
     }
   };
   const handleUpvote = async () => {
-    console.log(authContext.reputation);
 
     if (authContext.reputation > 50) {
       questionContext.handleUpvote(question);
@@ -938,7 +930,6 @@ function QuestionHeader({ question }) {
   };
 
   const handleDownVote = async () => {
-    console.log(authContext.reputation);
     if (authContext.reputation > 50) {
       questionContext.handleDownvote(question);
 
@@ -1170,8 +1161,6 @@ export default function AdminDetailedQuestionEditPage() {
         const getQuestionDetails = await axios.get(
           `http://localhost:8000/questions?id=${id}`
         );
-        console.log("getting question details" + getQuestionDetails);
-        console.log(getQuestionDetails);
         setQuestion(getQuestionDetails.data[0]);
         setAnswers(
           getQuestionDetails.data[0].answers.sort((a, b) => {

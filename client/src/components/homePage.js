@@ -15,6 +15,7 @@ import AddIcon from "@mui/icons-material/Add";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function HomePage() {
   const questionContext = useContext(QuestionContext);
@@ -25,34 +26,49 @@ export default function HomePage() {
   useEffect(() => {
     const getQuestions = async () => {
       // questionContext.fetchAll();
+      try {
+        setCurrentQuestions(questionContext.displayedQuestions);
+        // await axios.get('http://localhost:8000/alive'); 
 
-      setCurrentQuestions(questionContext.displayedQuestions);
-
-      if (authContext.isLoggedIn) {
-        questionContext.fetchUser();
+        if (authContext.isLoggedIn) {
+          questionContext.fetchUser();
+        }
+      } catch (err) {
+        console.log(err);
+        navigate("/error");
       }
     };
 
     getQuestions();
-  }, []);
+  }, [currentQuestions]);
 
   useEffect(() => {
-    setCurrentQuestions(questionContext.displayedQuestions);
+    try {
+      setCurrentQuestions(questionContext.displayedQuestions);
+
+    } catch (err) {
+      console.log(err);
+      navigate("/error");
+    }
   }, [questionContext.displayedQuestions]);
 
   const handleNewestSort = async () => {
     try {
       await questionContext.onSort({ sort: "newest" });
+
     } catch (err) {
       console.log(err);
+      navigate("/error");
     }
   };
 
   const handleActiveSort = async () => {
     try {
       await questionContext.onSort({ sort: "active" });
+
     } catch (err) {
       console.error(err);
+      navigate("/error");
     }
   };
 
@@ -61,6 +77,7 @@ export default function HomePage() {
       await questionContext.onSort({ unanswered: true });
     } catch (err) {
       console.log(err);
+      navigate("/error");
     }
   };
 

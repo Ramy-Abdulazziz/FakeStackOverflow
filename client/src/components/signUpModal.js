@@ -73,7 +73,6 @@ export default function SignUpModal() {
     try {
       await axios.post("http://localhost:8000/guest").then((response) => {
         if (response.status === 200) {
-          console.log(response.data);
           authContext.onLogin(response.data);
           questionContext.fetchAll();
           navigate("/home");

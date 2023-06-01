@@ -12,6 +12,7 @@ export default function QuestionContextProvider({ children }) {
   const [searchText, setSearchTerm] = useState("");
   const [detailedQuestion, setDetailedQuestion] = useState(null);
   const [userAnswered, setUserAnswered] = useState([]);
+  const [searchDisplay, setSearchDisplay] = useState([]);
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
@@ -25,6 +26,7 @@ export default function QuestionContextProvider({ children }) {
       const response = await axios.get("http://localhost:8000/questions", {
         params: params,
       });
+
       setDisplayedQuestions(response.data);
     } catch (err) {
       console.error(err);
@@ -305,6 +307,7 @@ export default function QuestionContextProvider({ children }) {
         loadingQuestions: loadingQuestions,
         detailedQuestion: detailedQuestion,
         userAnswered: userAnswered,
+        searchDisplay: searchDisplay,
         fetchAll: fetchAllQuestions,
         fetchUser: fetchAllUserQuestions,
         onSort: handleSort,

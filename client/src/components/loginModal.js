@@ -61,18 +61,26 @@ export default function LoginModal({ username }) {
           authContext.onLogin(response.data);
           questionContext.fetchAll();
           setLoginSuccess(true);
+
           navigate("/home");
-        } else if (response.status === 401) {
+        } else if (response.status === 403) {
           reset();
 
-          setError("Username or password incorrect - please try again");
+          setError("Password incorrect - please try again");
           setLoginError(true);
         }
       });
     } catch (err) {
       console.log("error", err);
       reset();
-      setError("Communication failure - please try again");
+
+      if (err.response.status === 401) {
+        setError("User does not exist - please check spelling and try again");
+      } else if (err.response.status === 403) {
+        setError("Please enter the correct password");
+      } else {
+        setError("Communication failure - please try again");
+      }
       setLoginError(true);
     }
   };

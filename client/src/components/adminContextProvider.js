@@ -1,4 +1,4 @@
-import { useState,useContext } from "react";
+import { useState, useContext } from "react";
 import AuthContext from "./authContext";
 import axios from "axios";
 import AdminContext from "./adminContext";
@@ -37,7 +37,6 @@ export default function AdminContextProvider({ children }) {
 
   const onUserClick = async (user) => {
     try {
-      console.log(user);
       setHandlingUser(user);
       setHandlingUserName(user.user_name);
       setHandlingUserID(user._id);
@@ -50,11 +49,9 @@ export default function AdminContextProvider({ children }) {
   const getUserQuestions = async () => {
     try {
       setLoadingQuestions(true);
-      console.log(authContext.userId);
       const response = await axios.get(
         `http://localhost:8000/questions/user/${handlingUserID}`
       );
-      console.log(response);
       setUserQuestions(
         response.data.sort(
           (a, b) => new Date(b.ask_date) - new Date(a.ask_date)
@@ -83,10 +80,9 @@ export default function AdminContextProvider({ children }) {
     }
   };
 
-  const exitMenu = () =>{
-
-    // setShowAdminOptions(false); 
-  }
+  const exitMenu = () => {
+    setShowAdminOptions(false);
+  };
 
   return (
     <AdminContext.Provider
@@ -98,7 +94,7 @@ export default function AdminContextProvider({ children }) {
         showAdminOption: showAdminOption,
         loadingQuestions: loadingQuestions,
         userQuestions: userQuestions,
-        exitMenu: exitMenu(),
+        exitMenu: exitMenu,
         refreshUser: refreshUser,
         onUserClick: onUserClick,
         deleteUser: deleteUser,
