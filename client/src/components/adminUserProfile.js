@@ -30,7 +30,6 @@ import AdminContext from "./adminContext";
 import axios from "axios";
 
 function UserQuestions() {
-  const questionContext = useContext(QuestionContext);
   const [userQuestions, setUserQuestions] = useState([]);
   const adminContext = useContext(AdminContext);
   const [open, setOpen] = useState(false);
@@ -102,7 +101,7 @@ function UserHeader() {
           `http://localhost:8000/questions/user/${adminContext.handlingUserID}`
         );
         setUserQuestions(response.data);
-
+        console.log(userAnswers);
         const answers = await axios.get(
           `http://localhost:8000/answer/user/${adminContext.handlingUserID}`
         );
@@ -204,7 +203,6 @@ function UserHeader() {
 export default function AdminUserProfile() {
   const authContext = useContext(AuthContext);
   const questionContext = useContext(QuestionContext);
-  const adminContext = useContext(AdminContext);
   useEffect(() => {
     questionContext.fetchUser();
 

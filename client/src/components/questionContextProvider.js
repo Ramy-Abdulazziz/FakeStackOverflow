@@ -12,7 +12,6 @@ export default function QuestionContextProvider({ children }) {
   const [searchText, setSearchTerm] = useState("");
   const [detailedQuestion, setDetailedQuestion] = useState(null);
   const [userAnswered, setUserAnswered] = useState([]);
-  const [searchDisplay, setSearchDisplay] = useState([]);
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
@@ -307,7 +306,6 @@ export default function QuestionContextProvider({ children }) {
         loadingQuestions: loadingQuestions,
         detailedQuestion: detailedQuestion,
         userAnswered: userAnswered,
-        searchDisplay: searchDisplay,
         fetchAll: fetchAllQuestions,
         fetchUser: fetchAllUserQuestions,
         onSort: handleSort,

@@ -15,7 +15,6 @@ import AddIcon from "@mui/icons-material/Add";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 export default function HomePage() {
   const questionContext = useContext(QuestionContext);

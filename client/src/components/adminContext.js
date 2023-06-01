@@ -6,8 +6,14 @@ const AdminContext = createContext({
   handlingUsername: "",
   handlingUserID: null,
   onLogin: () => {},
+  showAdminOption: false, 
+  loadingQuestions: false, 
+  userQuestions: [], 
   onUserClick: () => {},
   deleteUser: () => {},
+  exitMenu: () => {}, 
+  refreshUser : () => {}, 
+  fetchUser: () => {}, 
 });
 
 export default AdminContext;
