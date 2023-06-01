@@ -27,6 +27,7 @@ import AdminUserProfile from "./components/adminUserProfile";
 import AdminUserAnsweredPage from "./components/adminUserAnswers";
 import AdminDetailedQuestionEditPage from "./components/adminDetailedQuestionEdit";
 import AdminUserTagsPage from "./components/adminUserTags";
+import ErrorPage from "./components/errorPage";
 
 function App() {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
@@ -92,6 +93,8 @@ function App() {
                       path="/question/user/edit/:id/admin"
                       element={<EditQuestionForm adminEdit={true} />}
                     />
+                    <Route path="/error" element={<ErrorPage />} />
+                    <Route path='*' element={<ErrorPage />} />
                   </Routes>
                 </Container>
               </Box>

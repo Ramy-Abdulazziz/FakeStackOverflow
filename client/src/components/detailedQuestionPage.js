@@ -1029,6 +1029,8 @@ export default function DetailedQuestionPage() {
         setLoading(false);
       } catch (err) {
         console.error(err);
+        navigate('/error')
+
         setLoading(false);
       }
     };

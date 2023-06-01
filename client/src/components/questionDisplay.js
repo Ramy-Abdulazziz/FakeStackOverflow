@@ -2,7 +2,7 @@ import Pagination from "@mui/material/Pagination";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { Link} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Paper from "@mui/material/Paper";
 import { Card, CardContent } from "@mui/material";
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
@@ -21,6 +21,7 @@ import QuestionContext from "./questionContext";
 function SingleQuestionContainer({ question, userPage, adminPage }) {
   const darkTheme = createTheme({ palette: { mode: "dark" } });
   const questionContext = useContext(QuestionContext);
+  const navigate = useNavigate();
 
   const handleTagClick = async (tagName) => {
     try {
@@ -35,6 +36,7 @@ function SingleQuestionContainer({ question, userPage, adminPage }) {
       // navigate("/home");
     } catch (err) {
       console.error(err);
+      navigate("/error");
     }
   };
 

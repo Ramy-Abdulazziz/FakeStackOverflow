@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Box,
   Container,
@@ -17,7 +18,6 @@ import AuthContext from "./authContext";
 import QuestionContext from "./questionContext";
 import FormatDateText from "../dateTextUtils";
 import LiveHelpIcon from "@mui/icons-material/LiveHelp";
-import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import Table from "@mui/material/Table";
 import TableCell from "@mui/material/TableCell";
@@ -112,7 +112,7 @@ function UserHeader() {
       }
     };
     getUserQuestion();
-  }, [adminContext.loadingQuestions]);
+  }, []);
 
   const stringAvatar = (name) => {
     return {
@@ -184,20 +184,6 @@ function UserHeader() {
                     </Grid>
 
                     <Grid item>
-                      <Grid container spacing={2} direction={"row"}>
-                        <Grid item>
-                          <QuestionAnswerIcon fontSize="large" />
-                        </Grid>
-
-                        <Grid item>
-                          <Typography variant={"h5"}>
-                            {userAnswers.length}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Grid>
-
-                    <Grid item>
                       <Stack direction={"row"} spacing={2}>
                         <EmojiEmotionsIcon fontSize="large" />
                         <Typography variant="h5">
@@ -221,7 +207,6 @@ export default function AdminUserProfile() {
   const adminContext = useContext(AdminContext);
   useEffect(() => {
     questionContext.fetchUser();
-    console.log(adminContext);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

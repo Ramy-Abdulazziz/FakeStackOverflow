@@ -18,7 +18,6 @@ import AuthContext from "./authContext";
 import QuestionContext from "./questionContext";
 import FormatDateText from "../dateTextUtils";
 import LiveHelpIcon from "@mui/icons-material/LiveHelp";
-import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import Table from "@mui/material/Table";
 import TableCell from "@mui/material/TableCell";
@@ -54,7 +53,7 @@ function Users() {
 
     getUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authContext.isLoading]);
 
   const handleUserClick = async (id) => {
     adminContext.onUserClick(id);
@@ -67,9 +66,9 @@ function Users() {
         return;
       }
       const response = await adminContext.deleteUser(id);
-      if(response === undefined){
-        setSuccess("Deletion Cancelled")
-        setOpenSuccess(true); 
+      if (response === undefined) {
+        setSuccess("Deletion Cancelled");
+        setOpenSuccess(true);
         return;
       }
       if (response.status === 200) {
@@ -104,7 +103,7 @@ function Users() {
               <TableCell>
                 <Typography variant="h4"> All Users</Typography>{" "}
               </TableCell>
-              <TableCell></TableCell>
+              <TableCell>{""}</TableCell>
             </TableRow>
           </TableHead>
           {users.map((u) => (
@@ -236,20 +235,6 @@ function UserHeader() {
                         <Grid item>
                           <Typography variant={"h5"}>
                             {authContext.user.questions.length}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Grid>
-
-                    <Grid item>
-                      <Grid container spacing={2} direction={"row"}>
-                        <Grid item>
-                          <QuestionAnswerIcon fontSize="large" />
-                        </Grid>
-
-                        <Grid item>
-                          <Typography variant={"h5"}>
-                            {authContext.user.answers.length}
                           </Typography>
                         </Grid>
                       </Grid>

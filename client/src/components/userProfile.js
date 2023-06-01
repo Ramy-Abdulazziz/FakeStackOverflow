@@ -4,7 +4,6 @@ import AuthContext from "./authContext";
 import QuestionContext from "./questionContext";
 import FormatDateText from "../dateTextUtils";
 import LiveHelpIcon from "@mui/icons-material/LiveHelp";
-import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import Table from "@mui/material/Table";
 import TableCell from "@mui/material/TableCell";
@@ -27,15 +26,26 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import axios from "axios";
 
 function UserQuestions() {
   const questionContext = useContext(QuestionContext);
+  const authContext = useContext(AuthContext);
   const [userQuestions, setUserQuestions] = useState([]);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const getUserQuestion = async () => {
       questionContext.fetchUser();
+      console.log(authContext); 
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/questions/user/${authContext.userId}`
+        );
+        setUserQuestions(response.data);
+      } catch (err) {
+        console.log(err);
+      }
       setUserQuestions(questionContext.userQuestions);
       setOpen(questionContext.userQuestions.length === 0);
     };
@@ -54,7 +64,7 @@ function UserQuestions() {
             </TableRow>
           </TableHead>
           {userQuestions.map((q) => (
-            <TableRow>
+            <TableRow key={q._id}>
               <TableCell>
                 <Link to={`/question/user/edit/${q._id}`}>
                   <Typography variant="h5"> {q.title}</Typography>
@@ -83,6 +93,26 @@ function UserQuestions() {
 
 function UserHeader() {
   const authContext = useContext(AuthContext);
+  const [userQuestions, setUserQuestions] = useState([]);
+
+  useEffect(() => {
+    const getUserQuestion = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/questions/user/${authContext.userId}`
+        );
+        setUserQuestions(response.data);
+
+        // const answers = await axios.get(
+        //   `http://localhost:8000/answer/user/${authContext.userId}`
+        // );
+        // setUserAnswers(answers.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    getUserQuestion();
+  }, []);
 
   const stringAvatar = (name) => {
     return {
@@ -147,25 +177,13 @@ function UserHeader() {
 
                         <Grid item>
                           <Typography variant={"h5"}>
-                            {authContext.user.questions.length}
+                            {userQuestions.length}
                           </Typography>
                         </Grid>
                       </Grid>
                     </Grid>
 
-                    <Grid item>
-                      <Grid container spacing={2} direction={"row"}>
-                        <Grid item>
-                          <QuestionAnswerIcon fontSize="large" />
-                        </Grid>
-
-                        <Grid item>
-                          <Typography variant={"h5"}>
-                            {authContext.user.answers.length}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Grid>
+                   
 
                     <Grid item>
                       <Stack direction={"row"} spacing={2}>

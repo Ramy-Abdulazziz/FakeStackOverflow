@@ -18,18 +18,21 @@ import AuthContext from "./authContext";
 import { useNavigate } from "react-router";
 import QuestionContext from "./questionContext";
 import AdminContext from "./adminContext";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 export default function MenuDrawer({ open, setOpen }) {
   const [userName, setUserName] = useState("");
   const authContext = useContext(AuthContext);
   const questionContext = useContext(QuestionContext);
   const adminContext = useContext(AdminContext);
+  const [error, showError] = useState(false);
+  const [sucess, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const getUserStatus = async () => {
       if (authContext.isLoggedIn && authContext.userRole !== "guest") {
-
         setUserName(authContext.userName);
       }
     };
@@ -39,10 +42,17 @@ export default function MenuDrawer({ open, setOpen }) {
 
   const handleLogout = async () => {
     try {
-      await authContext.onLogout();
-
-      navigate("/");
+      const response = await authContext.onLogout();
+      console.log(response);
+      if (response.status === 200) {
+        setSuccess(true);
+        navigate("/");
+      } else {
+        showError(true);
+      }
     } catch (err) {
+      showError(true);
+
       console.error("Logout failed");
     }
   };
@@ -96,9 +106,8 @@ export default function MenuDrawer({ open, setOpen }) {
   };
 
   const exitAdmin = () => {
-
-    adminContext.exitMenu(); 
-  }
+    adminContext.exitMenu();
+  };
 
   const adminOptions = () => (
     <List>
@@ -253,8 +262,36 @@ export default function MenuDrawer({ open, setOpen }) {
   );
 
   return (
-    <Drawer anchor="left" open={open}>
-      {list()}
-    </Drawer>
+    <>
+      <Drawer anchor="left" open={open}>
+        {list()}
+      </Drawer>
+      <Snackbar
+        open={error}
+        autoHideDuration={6000}
+        onClose={() => showError(false)}
+      >
+        <Alert
+          onClose={() => showError(false)}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          Log out failed
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={sucess}
+        autoHideDuration={6000}
+        onClose={() => setSuccess(false)}
+      >
+        <Alert
+          onClose={() => setSuccess(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Successful Logout!
+        </Alert>
+      </Snackbar>
+    </>
   );
 }

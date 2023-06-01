@@ -71,7 +71,7 @@ export default function AuthContextProvider({ children }) {
         setSignUp(response.data.signup);
         setUser(response.data.user);
 
-        questionContext.fetchUser(); 
+        questionContext.fetchUser();
       } else if (response.data.userRole === "guest") {
         setUserId("0");
         setUserName("Guest");
@@ -84,20 +84,21 @@ export default function AuthContextProvider({ children }) {
 
   const logoutHandler = async () => {
     try {
-      await axios.post("http://localhost:8000/logout").then((response) => {
-        if (response.status === 200) {
-          setIsLoggedIn(false);
-          setUserName("");
-          setUserId("");
-          setUserRole("");
-          setReputation(0);
-          setUser(null);
-        }
-      });
+      const response = await axios.post("http://localhost:8000/logout");
+      if (response.status === 200) {
+        setIsLoggedIn(false);
+        setUserName("");
+        setUserId("");
+        setUserRole("");
+        setReputation(0);
+        setUser(null);
+      }
+
+      return response
     } catch (err) {
       setIsLoading(false);
-
       console.error("unable to log out", err);
+      return err.response
     }
   };
 
