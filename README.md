@@ -42,7 +42,11 @@ mongoose
 mysql
 nodemon
 ```
+## Getting Started
 
+MongoDB is used as the NOSQL database to store data for this application, be sure to [install](https://www.mongodb.com/docs/manual/administration/install-community/) and run it as a background service. 
+
+Node.js should also be [installed](https://nodejs.org/en/download)is used to manage React and all packages neededed to run the application via the npm package manager. 
 ## Setup and Structure
 
 After setting up your project structure, with seperate folders for both the client and server, be sure to install all nececarry dependancies using npm.
@@ -105,8 +109,36 @@ The application component holds the nececarry information for all routes:
     </AuthContextProvider>
 ```
 
-As shown, React Context are used as a means of avoiding unnecarry prop drilling and maintaining a sort of global state within the application. Different context are created for use within the application including user authentication, admin privledges, and question / answer interaction. 
+As shown, React Context are used as a means of avoiding unnecarry prop drilling and maintaining a sort of global state within the application. Different context are created for use within the application including user authentication, admin privledges, and question / answer interaction.
 
+### Communicating With The Server
+
+Axios is utilized to send HTTP requests to the server from the client side. Axios is a promise-based HTTP client for the browser and Node.js which makes it easy to send asynchronous HTTP requests to REST endpoints and perform CRUD operations.
+
+```
+import axios from 'axios';
+
+// GET request
+axios.get('/api/questions')
+  .then(response => {
+    console.log(response.data);
+  })
+  .catch(error => {
+    console.log(error);
+  });
+
+// POST request
+const newQuestion = { title: 'New Question', body: 'This is a new question.' };
+axios.post('/api/questions', newQuestion)
+  .then(response => {
+    console.log(response.data);
+  })
+  .catch(error => {
+    console.log(error);
+  });
+
+
+```
 ### Server
 
 The backend of the application is built on a Node.js and Express.js server, utilizing MongoDB as its primary database for data storage and retrieval.
@@ -116,6 +148,32 @@ Express is used as the server framework due to its flexibility and ease of use, 
 ### User Sessions
 For user sessions, express-session is used, which provides an API for handling session data in Express apps. User sessions are stored using connect-mongodb-session, a MongoDB-backed session store. This allows us to store session data in MongoDB, providing a more scalable and robust solution for managing session data compared to storing sessions in memory.
 
+```
+const store = new MongoDBStore({
+  uri: mongoDB,
+  databaseName: "fake_so",
+  collection: "userSessions",
+});
+
+store.on("error", function (error) {
+  console.error("Error connecting to session storage");
+});
+
+//Create Session Storage for usersessions
+
+app.use(
+  session({
+    secret: "This is a secret",
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+    },
+    store: store,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+```
 ### Security
 The bcrypt library is used to hash all user passwords, and for all authentication, this avoids storing the passswords in plaintext in the database. 
 
