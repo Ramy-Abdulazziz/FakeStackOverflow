@@ -113,8 +113,11 @@ The backend of the application is built on a Node.js and Express.js server, util
 
 Express is used as the server framework due to its flexibility and ease of use, providing a simple way to define routes and middleware. The cors package is used to enable Cross-Origin Resource Sharing (CORS), allowing the server to handle requests from different origins. This is particularly useful if your frontend and backend are hosted on different domains or ports. In this case, the server is set up to accept requests from http://localhost:3000.
 
-### User Ssessions
+### User Sessions
 For user sessions, express-session is used, which provides an API for handling session data in Express apps. User sessions are stored using connect-mongodb-session, a MongoDB-backed session store. This allows us to store session data in MongoDB, providing a more scalable and robust solution for managing session data compared to storing sessions in memory.
+
+### Security
+The bcrypt library is used to hash all user passwords, and for all authentication, this avoids storing the passswords in plaintext in the database. 
 
 ### Backend
 The backend uses Mongoose, an Object Data Modeling (ODM) library for MongoDB and Node.js. Mongoose helps manage relationships between data, provides schema validation, and is used to translate between objects in code and the representation of those objects in MongoDB.
@@ -130,6 +133,9 @@ The server listens on port 8000, ready to accept incoming requests and respond w
 
 ### Running The Server
 To run the server, ensure that Node.js and MongoDB are installed on your machine, then navigate to the directory containing the server files and run the command nodemon. If successful, you should see the message "Connected to database" in your terminal.
+
+
+
 ## Team Member 1 Contribution
 
 Solo Project - All work
