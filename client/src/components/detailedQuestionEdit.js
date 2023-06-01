@@ -12,7 +12,7 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
-
+import BodyText from "./bodyText";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
@@ -291,7 +291,6 @@ function SingleAnswer({ answer }) {
   };
 
   const emptyCheck = (content) => {
-
     return content.replace(new RegExp("\\s+", "g"), "") === "";
   };
 
@@ -418,9 +417,7 @@ function SingleAnswer({ answer }) {
                         onChange={handleNameChange}
                       />
                     ) : (
-                      <Typography variant="body1" sx={{}}>
-                        {answr.text}
-                      </Typography>
+                      <BodyText text={answr.text} clsName="answerText" />
                     )}
                   </Container>
                 </Grid>
@@ -900,7 +897,6 @@ function QuestionHeader({ question }) {
     }
   };
   const handleUpvote = async () => {
-
     if (authContext.reputation > 50) {
       questionContext.handleUpvote(question);
 
@@ -1011,7 +1007,7 @@ function QuestionHeader({ question }) {
                   }}
                 >
                   <Container>
-                    <Typography variant="h5">{question.text}</Typography>
+                    <BodyText text={question.text} clsName="questionText" />
                   </Container>
                 </Grid>
                 <Grid item>
@@ -1156,7 +1152,7 @@ export default function DetailedQuestionEditPage() {
         const getQuestionDetails = await axios.get(
           `http://localhost:8000/questions?id=${id}`
         );
-    
+
         setQuestion(getQuestionDetails.data[0]);
         setAnswers(
           getQuestionDetails.data[0].answers.sort((a, b) => {

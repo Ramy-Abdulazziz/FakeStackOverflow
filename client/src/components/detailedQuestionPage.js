@@ -16,6 +16,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import BodyText from "./bodyText";
 
 import {
   Box,
@@ -313,9 +314,8 @@ function SingleAnswer({ answer }) {
               }}
             >
               <Container sx={{ minWidth: 300 }}>
-                <Typography variant="body1" sx={{}}>
-                  {answr.text}
-                </Typography>
+              <BodyText text={answr.text} clsName="answerText" />
+
               </Container>
             </Grid>
             <Grid item>
@@ -874,7 +874,7 @@ function QuestionHeader({ question }) {
                   }}
                 >
                   <Container>
-                    <Typography variant="h5">{question.text}</Typography>
+                  <BodyText text={question.text} clsName="questionText" />
                   </Container>
                 </Grid>
                 <Grid item>

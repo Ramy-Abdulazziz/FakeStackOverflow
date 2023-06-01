@@ -15,6 +15,7 @@ import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import BodyText from "./bodyText";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -292,7 +293,6 @@ function SingleAnswer({ answer }) {
   };
 
   const emptyCheck = (content) => {
-
     return content.replace(new RegExp("\\s+", "g"), "") === "";
   };
 
@@ -419,9 +419,7 @@ function SingleAnswer({ answer }) {
                         onChange={handleNameChange}
                       />
                     ) : (
-                      <Typography variant="body1" sx={{}}>
-                        {answr.text}
-                      </Typography>
+                      <BodyText text={answr.text} clsName="answerText" />
                     )}
                   </Container>
                 </Grid>
@@ -810,7 +808,7 @@ function QuestionComments({ question }) {
     };
 
     getAllComments();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <>
@@ -904,7 +902,6 @@ function QuestionHeader({ question }) {
     }
   };
   const handleUpvote = async () => {
-
     if (authContext.reputation > 50) {
       questionContext.handleUpvote(question);
 
@@ -1015,7 +1012,7 @@ function QuestionHeader({ question }) {
                   }}
                 >
                   <Container>
-                    <Typography variant="h5">{question.text}</Typography>
+                    <BodyText text={question.text} clsName="questionText" />
                   </Container>
                 </Grid>
                 <Grid item>
@@ -1185,7 +1182,7 @@ export default function AdminDetailedQuestionEditPage() {
       }
     };
     getQuestionDetails();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionContext.allQuestions]);
 
   const handleAddNewClick = async () => {
