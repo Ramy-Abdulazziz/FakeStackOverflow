@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import { useContext } from "react";
 import AuthContext from "./authContext";
-import QuestionContext from "./questionContext";
 import FormatDateText from "../dateTextUtils";
 import LiveHelpIcon from "@mui/icons-material/LiveHelp";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
@@ -41,7 +40,7 @@ function UserQuestions() {
           `http://localhost:8000/questions/user/${adminContext.handlingUserID}`
         );
         setUserQuestions(response.data);
-        setOpen(userQuestions.length === 0);
+        setOpen(response.data.length === 0);
       } catch (err) {
         console.error(err);
       }
@@ -50,7 +49,7 @@ function UserQuestions() {
 
     getUserQuestion();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminContext.loadingQuestions]);
+  }, []);
   return (
     <>
       <TableContainer component={Paper}>
@@ -93,7 +92,6 @@ function UserQuestions() {
 function UserHeader() {
   const adminContext = useContext(AdminContext);
   const [userQuestions, setUserQuestions] = useState([]);
-  const [userAnswers, setUserAnswers] = useState([]);
   useEffect(() => {
     const getUserQuestion = async () => {
       try {
@@ -101,11 +99,6 @@ function UserHeader() {
           `http://localhost:8000/questions/user/${adminContext.handlingUserID}`
         );
         setUserQuestions(response.data);
-        console.log(userAnswers);
-        const answers = await axios.get(
-          `http://localhost:8000/answer/user/${adminContext.handlingUserID}`
-        );
-        setUserAnswers(answers.data);
       } catch (err) {
         console.error(err);
       }
@@ -202,10 +195,7 @@ function UserHeader() {
 }
 export default function AdminUserProfile() {
   const authContext = useContext(AuthContext);
-  const questionContext = useContext(QuestionContext);
   useEffect(() => {
-    questionContext.fetchUser();
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return authContext.isLoading ? (

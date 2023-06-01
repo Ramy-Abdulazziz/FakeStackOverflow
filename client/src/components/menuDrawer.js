@@ -46,6 +46,7 @@ export default function MenuDrawer({ open, setOpen }) {
       console.log(response);
       if (response.status === 200) {
         setSuccess(true);
+        adminContext.exitMenu(); 
         navigate("/");
       } else {
         showError(true);
