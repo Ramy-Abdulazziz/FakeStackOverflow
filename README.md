@@ -189,9 +189,18 @@ The server listens on port 8000, ready to accept incoming requests and respond w
 To run the server, ensure that Node.js and MongoDB are installed on your machine, then navigate to the directory containing the server files and run the command nodemon. If successful, you should see the message "Connected to database" in your terminal.
 
 
+## Initial Data Population
 
-## Team Member 1 Contribution
+Included is a script that can be used to populate the database for initial testing demonstration to run the script navigate to the server directory and run init.js passing the database address and username and password for an initial admin user: 
 
-Solo Project - All work
 
-## Team Member 2 Contribution
+```
+node init.js mongodb://address/of/your/library admin-username-here admin-password-here
+```
+
+if successfull you should see the message: 
+
+```
+Done populating data
+admin details aree user: admin-username-here, pass: admin-pass-here
+```
